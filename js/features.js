@@ -186,42 +186,143 @@
 
 (function() {
     var KEY = 'keepaliveAudioEnabled';
-    // 使用内联生成的静音 WAV data URI，不依赖外部文件
-    var SRC = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+    var SRC = 'data:audio/wav;base64,UklGRqQ+AABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YYA+AAAAAAEAAgADAAUABgAHAAkACgALAAwADgAPABAAEgATABQAFQAXABgAGQAbABwAHQAeACAAIQAiACQAJQAmACcAKQAqACsALQAuAC8AMAAyADMANAA2ADcAOAA5ADsAPAA9AD8AQABBAEIARABFAEYASABJAEoASwBNAE4ATwBRAFIAUwBUAFYAVwBYAFoAWwBcAF0AXwBgAGEAYwBkAGUAZgBoAGkAagBsAG0AbgBvAHEAcgBzAHQAdgB3AHgAegB7AHwAfQB/AIAAgQCDAIQAhQCGAIgAiQCKAIwAjQCOAI8AkQCSAJMAlQCWAJcAmACaAJsAnACeAJ8AoAChAKMApAClAKYAqACpAKoArACtAK4ArwCxALIAswC1ALYAtwC4ALoAuwC8AL4AvwDAAMEAwwDEAMUAxgDIAMkAygDMAM0AzgDPANEA0gDTANQA1gDXANgA2gDbANwA3QDfAOAA4QDjAOQA5QDmAOgA6QDqAOsA7QDuAO8A8QDyAPMA9AD2APcA+AD5APsA/AD9AP8AAAEBAQIBBAEFAQYBBwEJAQoBCwEMAQ4BDwEQARIBEwEUARUBFwEYARkBGgEcAR0BHgEgASEBIgEjASUBJgEnASgBKgErASwBLQEvATABMQEyATQBNQE2ATgBOQE6ATsBPQE+AT8BQAFCAUMBRAFFAUcBSAFJAUoBTAFNAU4BUAFRAVIBUwFVAVYBVwFYAVoBWwFcAV0BXwFgAWEBYgFkAWUBZgFnAWkBagFrAWwBbgFvAXABcQFzAXQBdQF2AXgBeQF6AXsBfQF+AX8BgAGCAYMBhAGFAYcBiAGJAYoBjAGNAY4BjwGRAZIBkwGUAZYBlwGYAZkBmwGcAZ0BngGgAaEBogGjAaUBpgGnAagBqgGrAawBrQGvAbABsQGyAbQBtQG2AbcBuAG6AbsBvAG9Ab8BwAHBAcIBxAHFAcYBxwHJAcoBywHMAc4BzwHQAdEB0gHUAdUB1gHXAdkB2gHbAdwB3gHfAeAB4QHiAeQB5QHmAecB6QHqAesB7AHuAe8B8AHxAfIB9AH1AfYB9wH5AfoB+wH8Af0B/wEAAgECAgIEAgUCBgIHAggCCgILAgwCDQIPAhACEQISAhMCFQIWAhcCGAIZAhsCHAIdAh4CIAIhAiICIwIkAiYCJwIoAikCKgIsAi0CLgIvAjECMgIzAjQCNQI3AjgCOQI6AjsCPQI+Aj8CQAJBAkMCRAJFAkYCRwJJAkoCSwJMAk0CTwJQAlECUgJTAlUCVgJXAlgCWQJbAlwCXQJeAl8CYQJiAmMCZAJlAmcCaAJpAmoCawJtAm4CbwJwAnECcgJ0AnUCdgJ3AngCegJ7AnwCfQJ+AoACgQKCAoMChAKFAocCiAKJAooCiwKNAo4CjwKQApECkgKUApUClgKXApgCmQKbApwCnQKeAp8CoQKiAqMCpAKlAqYCqAKpAqoCqwKsAq0CrwKwArECsgKzArQCtgK3ArgCuQK6ArsCvQK+Ar8CwALBAsICxALFAsYCxwLIAskCygLMAs0CzgLPAtAC0QLTAtQC1QLWAtcC2ALaAtsC3ALdAt4C3wLgAuIC4wLkAuUC5gLnAugC6gLrAuwC7QLuAu8C8ALyAvMC9AL1AvYC9wL4AvoC+wL8Av0C/gL/AgADAgMDAwQDBQMGAwcDCAMJAwsDDAMNAw4DDwMQAxEDEwMUAxUDFgMXAxgDGQMaAxwDHQMeAx8DIAMhAyIDIwMlAyYDJwMoAykDKgMrAywDLQMvAzADMQMyAzMDNAM1AzYDNwM5AzoDOwM8Az0DPgM/A0ADQQNDA0QDRQNGA0cDSANJA0oDSwNNA04DTwNQA1EDUgNTA1QDVQNWA1gDWQNaA1sDXANdA14DXwNgA2EDYgNkA2UDZgNnA2gDaQNqA2sDbANtA24DcANxA3IDcwN0A3UDdgN3A3gDeQN6A3sDfQN+A38DgAOBA4IDgwOEA4UDhgOHA4gDiQOLA4wDjQOOA48DkAORA5IDkwOUA5UDlgOXA5gDmQObA5wDnQOeA58DoAOhA6IDowOkA6UDpgOnA6gDqQOqA6sDrQOuA68DsAOxA7IDswO0A7UDtgO3A7gDuQO6A7sDvAO9A74DvwPAA8EDwgPEA8UDxgPHA8gDyQPKA8sDzAPNA84DzwPQA9ED0gPTA9QD1QPWA9cD2APZA9oD2wPcA90D3gPfA+AD4QPiA+QD5QPmA+cD6APpA+oD6wPsA+0D7gPvA/AD8QPyA/MD9AP1A/YD9wP4A/kD+gP7A/wD/QP+A/8DAAQBBAIEAwQEBAUEBgQHBAgECQQKBAsEDAQNBA4EDwQQBBEEEgQTBBQEFQQWBBcEGAQZBBoEGwQcBB0EHgQfBCAEIQQiBCMEJAQlBCYEJwQoBCkEKQQqBCsELAQtBC4ELwQwBDEEMgQzBDQENQQ2BDcEOAQ5BDoEOwQ8BD0EPgQ/BEAEQQRCBEMERARFBEYERgRHBEgESQRKBEsETARNBE4ETwRQBFEEUgRTBFQEVQRWBFcEWARZBFoEWgRbBFwEXQReBF8EYARhBGIEYwRkBGUEZgRnBGgEaQRpBGoEawRsBG0EbgRvBHAEcQRyBHMEdAR1BHUEdgR3BHgEeQR6BHsEfAR9BH4EfwSABIEEgQSCBIMEhASFBIYEhwSIBIkEigSLBIsEjASNBI4EjwSQBJEEkgSTBJQElASVBJYElwSYBJkEmgSbBJwEnQSdBJ4EnwSgBKEEogSjBKQEpQSlBKYEpwSoBKkEqgSrBKwErAStBK4ErwSwBLEEsgSzBLMEtAS1BLYEtwS4BLkEugS6BLsEvAS9BL4EvwTABMAEwQTCBMMExATFBMYExgTHBMgEyQTKBMsEzATMBM0EzgTPBNAE0QTSBNIE0wTUBNUE1gTXBNcE2ATZBNoE2wTcBNwE3QTeBN8E4AThBOEE4gTjBOQE5QTmBOYE5wToBOkE6gTrBOsE7ATtBO4E7wTwBPAE8QTyBPME9AT0BPUE9gT3BPgE+AT5BPoE+wT8BP0E/QT+BP8EAAUBBQEFAgUDBQQFBQUFBQYFBwUIBQkFCQUKBQsFDAUMBQ0FDgUPBRAFEAURBRIFEwUUBRQFFQUWBRcFFwUYBRkFGgUbBRsFHAUdBR4FHgUfBSAFIQUiBSIFIwUkBSUFJQUmBScFKAUoBSkFKgUrBSsFLAUtBS4FLgUvBTAFMQUxBTIFMwU0BTQFNQU2BTcFNwU4BTkFOgU6BTsFPAU9BT0FPgU/BUAFQAVBBUIFQwVDBUQFRQVFBUYFRwVIBUgFSQVKBUsFSwVMBU0FTQVOBU8FUAVQBVEFUgVSBVMFVAVVBVUFVgVXBVcFWAVZBVoFWgVbBVwFXAVdBV4FXgVfBWAFYQVhBWIFYwVjBWQFZQVlBWYFZwVnBWgFaQVqBWoFawVsBWwFbQVuBW4FbwVwBXAFcQVyBXIFcwV0BXQFdQV2BXYFdwV4BXgFeQV6BXoFewV8BXwFfQV+BX4FfwWABYAFgQWCBYIFgwWEBYQFhQWGBYYFhwWIBYgFiQWJBYoFiwWLBYwFjQWNBY4FjwWPBZAFkQWRBZIFkgWTBZQFlAWVBZYFlgWXBZcFmAWZBZkFmgWbBZsFnAWcBZ0FngWeBZ8FoAWgBaEFoQWiBaMFowWkBaQFpQWmBaYFpwWnBagFqQWpBaoFqgWrBawFrAWtBa0FrgWvBa8FsAWwBbEFsgWyBbMFswW0BbQFtQW2BbYFtwW3BbgFuQW5BboFugW7BbsFvAW9Bb0FvgW+Bb8FvwXABcAFwQXCBcIFwwXDBcQFxAXFBcYFxgXHBccFyAXIBckFyQXKBcoFywXMBcwFzQXNBc4FzgXPBc8F0AXQBdEF0gXSBdMF0wXUBdQF1QXVBdYF1gXXBdcF2AXYBdkF2QXaBdoF2wXcBdwF3QXdBd4F3gXfBd8F4AXgBeEF4QXiBeIF4wXjBeQF5AXlBeUF5gXmBecF5wXoBegF6QXpBeoF6gXrBesF7AXsBe0F7QXuBe4F7gXvBe8F8AXwBfEF8QXyBfIF8wXzBfQF9AX1BfUF9gX2BfcF9wX3BfgF+AX5BfkF+gX6BfsF+wX8BfwF/QX9Bf0F/gX+Bf8F/wUABgAGAQYBBgEGAgYCBgMGAwYEBgQGBQYFBgUGBgYGBgcGBwYIBggGCAYJBgkGCgYKBgsGCwYLBgwGDAYNBg0GDgYOBg4GDwYPBhAGEAYQBhEGEQYSBhIGEgYTBhMGFAYUBhQGFQYVBhYGFgYWBhcGFwYYBhgGGAYZBhkGGgYaBhoGGwYbBhwGHAYcBh0GHQYdBh4GHgYfBh8GHwYgBiAGIAYhBiEGIgYiBiIGIwYjBiMGJAYkBiQGJQYlBiYGJgYmBicGJwYnBigGKAYoBikGKQYpBioGKgYqBisGKwYrBiwGLAYsBi0GLQYtBi4GLgYuBi8GLwYvBjAGMAYwBjEGMQYxBjIGMgYyBjMGMwYzBjQGNAY0BjUGNQY1BjYGNgY2BjYGNwY3BjcGOAY4BjgGOQY5BjkGOQY6BjoGOgY7BjsGOwY8BjwGPAY8Bj0GPQY9Bj4GPgY+Bj4GPwY/Bj8GQAZABkAGQAZBBkEGQQZBBkIGQgZCBkIGQwZDBkMGRAZEBkQGRAZFBkUGRQZFBkYGRgZGBkYGRwZHBkcGRwZIBkgGSAZIBkkGSQZJBkkGSgZKBkoGSgZKBksGSwZLBksGTAZMBkwGTAZNBk0GTQZNBk0GTgZOBk4GTgZPBk8GTwZPBk8GUAZQBlAGUAZQBlEGUQZRBlEGUQZSBlIGUgZSBlIGUwZTBlMGUwZTBlQGVAZUBlQGVAZVBlUGVQZVBlUGVgZWBlYGVgZWBlYGVwZXBlcGVwZXBlcGWAZYBlgGWAZYBlgGWQZZBlkGWQZZBlkGWgZaBloGWgZaBloGWgZbBlsGWwZbBlsGWwZcBlwGXAZcBlwGXAZcBl0GXQZdBl0GXQZdBl0GXQZeBl4GXgZeBl4GXgZeBl4GXwZfBl8GXwZfBl8GXwZfBmAGYAZgBmAGYAZgBmAGYAZgBmAGYQZhBmEGYQZhBmEGYQZhBmEGYQZiBmIGYgZiBmIGYgZiBmIGYgZiBmIGYwZjBmMGYwZjBmMGYwZjBmMGYwZjBmMGYwZkBmQGZAZkBmQGZAZkBmQGZAZkBmQGZAZkBmQGZAZkBmQGZQZlBmUGZQZlBmUGZQZlBmUGZQZlBmUGZQZlBmUGZQZlBmUGZQZlBmUGZQZlBmUGZQZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZgZmBmYGZQZlBmUGZQZlBmUGZQZlBmUGZQZlBmUGZQZlBmUGZQZlBmUGZQZlBmUGZQZlBmUGZQZkBmQGZAZkBmQGZAZkBmQGZAZkBmQGZAZkBmQGZAZkBmQGYwZjBmMGYwZjBmMGYwZjBmMGYwZjBmMGYwZiBmIGYgZiBmIGYgZiBmIGYgZiBmIGYQZhBmEGYQZhBmEGYQZhBmEGYQZgBmAGYAZgBmAGYAZgBmAGYAZgBl8GXwZfBl8GXwZfBl8GXwZeBl4GXgZeBl4GXgZeBl4GXQZdBl0GXQZdBl0GXQZdBlwGXAZcBlwGXAZcBlwGWwZbBlsGWwZbBlsGWgZaBloGWgZaBloGWgZZBlkGWQZZBlkGWQZYBlgGWAZYBlgGWAZXBlcGVwZXBlcGVwZWBlYGVgZWBlYGVgZVBlUGVQZVBlUGVAZUBlQGVAZUBlMGUwZTBlMGUwZSBlIGUgZSBlIGUQZRBlEGUQZRBlAGUAZQBlAGUAZPBk8GTwZPBk8GTgZOBk4GTgZNBk0GTQZNBk0GTAZMBkwGTAZLBksGSwZLBkoGSgZKBkoGSgZJBkkGSQZJBkgGSAZIBkgGRwZHBkcGRwZGBkYGRgZGBkUGRQZFBkUGRAZEBkQGRAZDBkMGQwZCBkIGQgZCBkEGQQZBBkEGQAZABkAGQAY/Bj8GPwY+Bj4GPgY+Bj0GPQY9BjwGPAY8BjwGOwY7BjsGOgY6BjoGOQY5BjkGOQY4BjgGOAY3BjcGNwY2BjYGNgY2BjUGNQY1BjQGNAY0BjMGMwYzBjIGMgYyBjEGMQYxBjAGMAYwBi8GLwYvBi4GLgYuBi0GLQYtBiwGLAYsBisGKwYrBioGKgYqBikGKQYpBigGKAYoBicGJwYnBiYGJgYmBiUGJQYkBiQGJAYjBiMGIwYiBiIGIgYhBiEGIAYgBiAGHwYfBh8GHgYeBh0GHQYdBhwGHAYcBhsGGwYaBhoGGgYZBhkGGAYYBhgGFwYXBhYGFgYWBhUGFQYUBhQGFAYTBhMGEgYSBhIGEQYRBhAGEAYQBg8GDwYOBg4GDgYNBg0GDAYMBgsGCwYLBgoGCgYJBgkGCAYIBggGBwYHBgYGBgYFBgUGBQYEBgQGAwYDBgIGAgYBBgEGAQYABgAG/wX/Bf4F/gX9Bf0F/QX8BfwF+wX7BfoF+gX5BfkF+AX4BfcF9wX3BfYF9gX1BfUF9AX0BfMF8wXyBfIF8QXxBfAF8AXvBe8F7gXuBe4F7QXtBewF7AXrBesF6gXqBekF6QXoBegF5wXnBeYF5gXlBeUF5AXkBeMF4wXiBeIF4QXhBeAF4AXfBd8F3gXeBd0F3QXcBdwF2wXaBdoF2QXZBdgF2AXXBdcF1gXWBdUF1QXUBdQF0wXTBdIF0gXRBdAF0AXPBc8FzgXOBc0FzQXMBcwFywXKBcoFyQXJBcgFyAXHBccFxgXGBcUFxAXEBcMFwwXCBcIFwQXABcAFvwW/Bb4FvgW9Bb0FvAW7BbsFugW6BbkFuQW4BbcFtwW2BbYFtQW0BbQFswWzBbIFsgWxBbAFsAWvBa8FrgWtBa0FrAWsBasFqgWqBakFqQWoBacFpwWmBaYFpQWkBaQFowWjBaIFoQWhBaAFoAWfBZ4FngWdBZwFnAWbBZsFmgWZBZkFmAWXBZcFlgWWBZUFlAWUBZMFkgWSBZEFkQWQBY8FjwWOBY0FjQWMBYsFiwWKBYkFiQWIBYgFhwWGBYYFhQWEBYQFgwWCBYIFgQWABYAFfwV+BX4FfQV8BXwFewV6BXoFeQV4BXgFdwV2BXYFdQV0BXQFcwVyBXIFcQVwBXAFbwVuBW4FbQVsBWwFawVqBWoFaQVoBWcFZwVmBWUFZQVkBWMFYwViBWEFYQVgBV8FXgVeBV0FXAVcBVsFWgVaBVkFWAVXBVcFVgVVBVUFVAVTBVIFUgVRBVAFUAVPBU4FTQVNBUwFSwVLBUoFSQVIBUgFRwVGBUUFRQVEBUMFQwVCBUEFQAVABT8FPgU9BT0FPAU7BToFOgU5BTgFNwU3BTYFNQU0BTQFMwUyBTEFMQUwBS8FLgUuBS0FLAUrBSsFKgUpBSgFKAUnBSYFJQUlBSQFIwUiBSIFIQUgBR8FHgUeBR0FHAUbBRsFGgUZBRgFFwUXBRYFFQUUBRQFEwUSBREFEAUQBQ8FDgUNBQwFDAULBQoFCQUJBQgFBwUGBQUFBQUEBQMFAgUBBQEFAAX/BP4E/QT9BPwE+wT6BPkE+AT4BPcE9gT1BPQE9ATzBPIE8QTwBPAE7wTuBO0E7ATrBOsE6gTpBOgE5wTmBOYE5QTkBOME4gThBOEE4ATfBN4E3QTcBNwE2wTaBNkE2ATXBNcE1gTVBNQE0wTSBNIE0QTQBM8EzgTNBMwEzATLBMoEyQTIBMcExgTGBMUExATDBMIEwQTABMAEvwS+BL0EvAS7BLoEugS5BLgEtwS2BLUEtASzBLMEsgSxBLAErwSuBK0ErASsBKsEqgSpBKgEpwSmBKUEpQSkBKMEogShBKAEnwSeBJ0EnQScBJsEmgSZBJgElwSWBJUElASUBJMEkgSRBJAEjwSOBI0EjASLBIsEigSJBIgEhwSGBIUEhASDBIIEgQSBBIAEfwR+BH0EfAR7BHoEeQR4BHcEdgR1BHUEdARzBHIEcQRwBG8EbgRtBGwEawRqBGkEaQRoBGcEZgRlBGQEYwRiBGEEYARfBF4EXQRcBFsEWgRaBFkEWARXBFYEVQRUBFMEUgRRBFAETwROBE0ETARLBEoESQRIBEcERgRGBEUERARDBEIEQQRABD8EPgQ9BDwEOwQ6BDkEOAQ3BDYENQQ0BDMEMgQxBDAELwQuBC0ELAQrBCoEKQQpBCgEJwQmBCUEJAQjBCIEIQQgBB8EHgQdBBwEGwQaBBkEGAQXBBYEFQQUBBMEEgQRBBAEDwQOBA0EDAQLBAoECQQIBAcEBgQFBAQEAwQCBAEEAAT/A/4D/QP8A/sD+gP5A/gD9wP2A/UD9APzA/ID8QPwA+8D7gPtA+wD6wPqA+kD6APnA+YD5QPkA+ID4QPgA98D3gPdA9wD2wPaA9kD2APXA9YD1QPUA9MD0gPRA9ADzwPOA80DzAPLA8oDyQPIA8cDxgPFA8QDwgPBA8ADvwO+A70DvAO7A7oDuQO4A7cDtgO1A7QDswOyA7EDsAOvA64DrQOrA6oDqQOoA6cDpgOlA6QDowOiA6EDoAOfA54DnQOcA5sDmQOYA5cDlgOVA5QDkwOSA5EDkAOPA44DjQOMA4sDiQOIA4cDhgOFA4QDgwOCA4EDgAN/A34DfQN7A3oDeQN4A3cDdgN1A3QDcwNyA3EDcANuA20DbANrA2oDaQNoA2cDZgNlA2QDYgNhA2ADXwNeA10DXANbA1oDWQNYA1YDVQNUA1MDUgNRA1ADTwNOA00DSwNKA0kDSANHA0YDRQNEA0MDQQNAAz8DPgM9AzwDOwM6AzkDNwM2AzUDNAMzAzIDMQMwAy8DLQMsAysDKgMpAygDJwMmAyUDIwMiAyEDIAMfAx4DHQMcAxoDGQMYAxcDFgMVAxQDEwMRAxADDwMOAw0DDAMLAwkDCAMHAwYDBQMEAwMDAgMAA/8C/gL9AvwC+wL6AvgC9wL2AvUC9ALzAvIC8ALvAu4C7QLsAusC6gLoAucC5gLlAuQC4wLiAuAC3wLeAt0C3ALbAtoC2ALXAtYC1QLUAtMC0QLQAs8CzgLNAswCygLJAsgCxwLGAsUCxALCAsECwAK/Ar4CvQK7AroCuQK4ArcCtgK0ArMCsgKxArACrwKtAqwCqwKqAqkCqAKmAqUCpAKjAqICoQKfAp4CnQKcApsCmQKYApcClgKVApQCkgKRApACjwKOAo0CiwKKAokCiAKHAoUChAKDAoICgQKAAn4CfQJ8AnsCegJ4AncCdgJ1AnQCcgJxAnACbwJuAm0CawJqAmkCaAJnAmUCZAJjAmICYQJfAl4CXQJcAlsCWQJYAlcCVgJVAlMCUgJRAlACTwJNAkwCSwJKAkkCRwJGAkUCRAJDAkECQAI/Aj4CPQI7AjoCOQI4AjcCNQI0AjMCMgIxAi8CLgItAiwCKgIpAigCJwImAiQCIwIiAiECIAIeAh0CHAIbAhkCGAIXAhYCFQITAhICEQIQAg8CDQIMAgsCCgIIAgcCBgIFAgQCAgIBAgAC/wH9AfwB+wH6AfkB9wH2AfUB9AHyAfEB8AHvAe4B7AHrAeoB6QHnAeYB5QHkAeIB4QHgAd8B3gHcAdsB2gHZAdcB1gHVAdQB0gHRAdABzwHOAcwBywHKAckBxwHGAcUBxAHCAcEBwAG/Ab0BvAG7AboBuAG3AbYBtQG0AbIBsQGwAa8BrQGsAasBqgGoAacBpgGlAaMBogGhAaABngGdAZwBmwGZAZgBlwGWAZQBkwGSAZEBjwGOAY0BjAGKAYkBiAGHAYUBhAGDAYIBgAF/AX4BfQF7AXoBeQF4AXYBdQF0AXMBcQFwAW8BbgFsAWsBagFpAWcBZgFlAWQBYgFhAWABXwFdAVwBWwFaAVgBVwFWAVUBUwFSAVEBUAFOAU0BTAFKAUkBSAFHAUUBRAFDAUIBQAE/AT4BPQE7AToBOQE4ATYBNQE0ATIBMQEwAS8BLQEsASsBKgEoAScBJgElASMBIgEhASABHgEdARwBGgEZARgBFwEVARQBEwESARABDwEOAQwBCwEKAQkBBwEGAQUBBAECAQEBAAH/AP0A/AD7APkA+AD3APYA9ADzAPIA8QDvAO4A7QDrAOoA6QDoAOYA5QDkAOMA4QDgAN8A3QDcANsA2gDYANcA1gDUANMA0gDRAM8AzgDNAMwAygDJAMgAxgDFAMQAwwDBAMAAvwC+ALwAuwC6ALgAtwC2ALUAswCyALEArwCuAK0ArACqAKkAqACmAKUApACjAKEAoACfAJ4AnACbAJoAmACXAJYAlQCTAJIAkQCPAI4AjQCMAIoAiQCIAIYAhQCEAIMAgQCAAH8AfQB8AHsAegB4AHcAdgB0AHMAcgBxAG8AbgBtAGwAagBpAGgAZgBlAGQAYwBhAGAAXwBdAFwAWwBaAFgAVwBWAFQAUwBSAFEATwBOAE0ASwBKAEkASABGAEUARABCAEEAQAA/AD0APAA7ADkAOAA3ADYANAAzADIAMAAvAC4ALQArACoAKQAnACYAJQAkACIAIQAgAB4AHQAcABsAGQAYABcAFQAUABMAEgAQAA8ADgAMAAsACgAJAAcABgAFAAMAAgABAAAA///+//3/+//6//n/9//2//X/9P/y//H/8P/u/+3/7P/r/+n/6P/n/+X/5P/j/+L/4P/f/97/3P/b/9r/2f/X/9b/1f/T/9L/0f/Q/87/zf/M/8r/yf/I/8f/xf/E/8P/wf/A/7//vv+8/7v/uv+4/7f/tv+1/7P/sv+x/6//rv+t/6z/qv+p/6j/pv+l/6T/o/+h/6D/n/+d/5z/m/+a/5j/l/+W/5T/k/+S/5H/j/+O/43/jP+K/4n/iP+G/4X/hP+D/4H/gP9//33/fP97/3r/eP93/3b/dP9z/3L/cf9v/27/bf9r/2r/af9o/2b/Zf9k/2L/Yf9g/1//Xf9c/1v/Wv9Y/1f/Vv9U/1P/Uv9R/0//Tv9N/0v/Sv9J/0j/Rv9F/0T/Qv9B/0D/P/89/zz/O/86/zj/N/82/zT/M/8y/zH/L/8u/y3/LP8q/yn/KP8m/yX/JP8j/yH/IP8f/x3/HP8b/xr/GP8X/xb/Ff8T/xL/Ef8P/w7/Df8M/wr/Cf8I/wf/Bf8E/wP/Af8A///+/v78/vv++v75/vf+9v71/vT+8v7x/vD+7v7t/uz+6/7p/uj+5/7m/uT+4/7i/uD+3/7e/t3+2/7a/tn+2P7W/tX+1P7T/tH+0P7P/s7+zP7L/sr+yP7H/sb+xf7D/sL+wf7A/r7+vf68/rv+uf64/rf+tv60/rP+sv6w/q/+rv6t/qv+qv6p/qj+pv6l/qT+o/6h/qD+n/6e/pz+m/6a/pn+l/6W/pX+lP6S/pH+kP6P/o3+jP6L/or+iP6H/ob+hf6D/oL+gf6A/n7+ff58/nv+ef54/nf+dv50/nP+cv5x/m/+bv5t/mz+av5p/mj+Z/5l/mT+Y/5i/mD+X/5e/l3+W/5a/ln+WP5W/lX+VP5T/lH+UP5P/k7+TP5L/kr+Sf5I/kb+Rf5E/kP+Qf5A/j/+Pv48/jv+Ov45/jf+Nv41/jT+Mv4x/jD+L/4u/iz+K/4q/in+J/4m/iX+JP4i/iH+IP4f/h7+HP4b/hr+Gf4X/hb+Ff4U/hL+Ef4Q/g/+Dv4M/gv+Cv4J/gf+Bv4F/gT+A/4B/gD+//3+/fz9+/36/fn9+P32/fX99P3z/fH98P3v/e797f3r/er96f3o/ef95f3k/eP94v3g/d/93v3d/dz92v3Z/dj91/3W/dT90/3S/dH9z/3O/c39zP3L/cn9yP3H/cb9xf3D/cL9wf3A/b/9vf28/bv9uv25/bf9tv21/bT9s/2x/bD9r/2u/a39q/2q/an9qP2n/aX9pP2j/aL9of2f/Z79nf2c/Zv9mf2Y/Zf9lv2V/ZP9kv2R/ZD9j/2O/Yz9i/2K/Yn9iP2G/YX9hP2D/YL9gP1//X79ff18/Xv9ef14/Xf9dv11/XP9cv1x/XD9b/1u/Wz9a/1q/Wn9aP1n/WX9ZP1j/WL9Yf1f/V79Xf1c/Vv9Wv1Y/Vf9Vv1V/VT9U/1R/VD9T/1O/U39TP1K/Un9SP1H/Ub9Rf1D/UL9Qf1A/T/9Pv08/Tv9Ov05/Tj9N/02/TT9M/0y/TH9MP0v/S39LP0r/Sr9Kf0o/Sb9Jf0k/SP9Iv0h/SD9Hv0d/Rz9G/0a/Rn9GP0W/RX9FP0T/RL9Ef0Q/Q79Df0M/Qv9Cv0J/Qj9Bv0F/QT9A/0C/QH9AP3+/P38/Pz7/Pr8+fz4/Pf89fz0/PP88vzx/PD87/zt/Oz86/zq/On86Pzn/Ob85Pzj/OL84fzg/N/83vzd/Nv82vzZ/Nj81/zW/NX81PzT/NH80PzP/M78zfzM/Mv8yvzJ/Mf8xvzF/MT8w/zC/MH8wPy//L38vPy7/Lr8ufy4/Lf8tvy1/LP8svyx/LD8r/yu/K38rPyr/Kr8qPyn/Kb8pfyk/KP8ovyh/KD8n/ye/Jz8m/ya/Jn8mPyX/Jb8lfyU/JP8kvyQ/I/8jvyN/Iz8i/yK/In8iPyH/Ib8hfyD/IL8gfyA/H/8fvx9/Hz8e/x6/Hn8ePx3/HX8dPxz/HL8cfxw/G/8bvxt/Gz8a/xq/Gn8aPxn/GX8ZPxj/GL8Yfxg/F/8Xvxd/Fz8W/xa/Fn8WPxX/Fb8VfxT/FL8UfxQ/E/8TvxN/Ez8S/xK/En8SPxH/Eb8RfxE/EP8QvxB/ED8P/w+/Dz8O/w6/Dn8OPw3/Db8Nfw0/DP8Mvwx/DD8L/wu/C38LPwr/Cr8Kfwo/Cf8Jvwl/CT8I/wi/CH8IPwf/B78HPwb/Br8GfwY/Bf8FvwV/BT8E/wS/BH8EPwP/A78DfwM/Av8CvwJ/Aj8B/wG/AX8BPwD/AL8AfwA/P/7/vv9+/z7+/v6+/n7+Pv3+/b79fv0+/P78vvx+/D77/vu++377Pvr++r76fvo++f75vvl++T74/vi++H74Pvf+9773fvc+9v72vvZ+9j71/vX+9b71fvU+9P70vvR+9D7z/vO+837zPvL+8r7yfvI+8f7xvvF+8T7w/vC+8H7wPu/+777vfu8+7v7uvu6+7n7uPu3+7b7tfu0+7P7svux+7D7r/uu+637rPur+6r7qfuo+6f7pvum+6X7pPuj+6L7ofug+5/7nvud+5z7m/ua+5n7mPuX+5f7lvuV+5T7k/uS+5H7kPuP+477jfuM+4v7i/uK+4n7iPuH+4b7hfuE+4P7gvuB+4D7f/t/+377fft8+3v7evt5+3j7d/t2+3X7dft0+3P7cvtx+3D7b/tu+237bPts+2v7avtp+2j7Z/tm+2X7ZPtj+2P7Yvth+2D7X/te+137XPtb+1v7WvtZ+1j7V/tW+1X7VPtU+1P7UvtR+1D7T/tO+037TftM+0v7SvtJ+0j7R/tG+0b7RftE+0P7QvtB+0D7QPs/+z77Pfs8+zv7Ovs6+zn7OPs3+zb7Nfs0+zT7M/sy+zH7MPsv+y77Lvst+yz7K/sq+yn7Kfso+yf7Jvsl+yT7JPsj+yL7Ifsg+x/7H/se+x37HPsb+xr7GvsZ+xj7F/sW+xX7FfsU+xP7EvsR+xD7EPsP+w77DfsM+wz7C/sK+wn7CPsI+wf7BvsF+wT7A/sD+wL7AfsA+//6//r++v36/Pr7+vv6+vr5+vj69/r3+vb69fr0+vT68/ry+vH68Prw+u/67vrt+uz67Prr+ur66frp+uj65/rm+uX65frk+uP64vri+uH64Prf+t763vrd+tz62/rb+tr62frY+tj61/rW+tX61frU+tP60vrS+tH60PrP+s/6zvrN+sz6zPrL+sr6yfrJ+sj6x/rG+sb6xfrE+sP6w/rC+sH6wPrA+r/6vvq9+r36vPq7+rv6uvq5+rj6uPq3+rb6tfq1+rT6s/qz+rL6sfqw+rD6r/qu+q76rfqs+qv6q/qq+qn6qfqo+qf6pvqm+qX6pPqk+qP6ovqi+qH6oPqf+p/6nvqd+p36nPqb+pv6mvqZ+pn6mPqX+pb6lvqV+pT6lPqT+pL6kvqR+pD6kPqP+o76jvqN+oz6jPqL+or6ivqJ+oj6iPqH+ob6hvqF+oT6hPqD+oL6gvqB+oD6gPp/+n76fvp9+nz6fPp7+nr6evp5+nj6ePp3+nf6dvp1+nX6dPpz+nP6cvpx+nH6cPpv+m/6bvpu+m36bPps+mv6avpq+mn6afpo+mf6Z/pm+mX6Zfpk+mT6Y/pi+mL6Yfpg+mD6X/pf+l76Xfpd+lz6XPpb+lr6WvpZ+ln6WPpX+lf6VvpW+lX6VPpU+lP6U/pS+lH6UfpQ+lD6T/pO+k76TfpN+kz6TPpL+kr6SvpJ+kn6SPpH+kf6RvpG+kX6RfpE+kP6Q/pC+kL6QfpB+kD6QPo/+j76Pvo9+j36PPo8+jv6Ovo6+jn6Ofo4+jj6N/o3+jb6Nvo1+jT6NPoz+jP6Mvoy+jH6Mfow+jD6L/ou+i76Lfot+iz6LPor+iv6Kvoq+in6Kfoo+ij6J/on+ib6Jvol+iT6JPoj+iP6Ivoi+iH6Ifog+iD6H/of+h76Hvod+h36HPoc+hv6G/oa+hr6GfoZ+hj6GPoX+hf6FvoW+hX6FfoU+hT6E/oT+hL6EvoS+hH6EfoQ+hD6D/oP+g76DvoN+g36DPoM+gv6C/oK+gr6CfoJ+gn6CPoI+gf6B/oG+gb6BfoF+gT6BPoD+gP6A/oC+gL6AfoB+gD6APr/+f/5//n++f75/fn9+fz5/Pn7+fv5+/n6+fr5+fn5+fj5+Pn4+ff59/n2+fb59fn1+fX59Pn0+fP58/ny+fL58vnx+fH58Pnw+fD57/nv+e757vnu+e357fns+ez57Pnr+ev56vnq+er56fnp+ej56Pno+ef55/nm+eb55vnl+eX55Pnk+eT54/nj+eP54vni+eH54fnh+eD54Png+d/53/ne+d753vnd+d353fnc+dz53Pnb+dv52vna+dr52fnZ+dn52PnY+dj51/nX+df51vnW+db51fnV+dX51PnU+dT50/nT+dP50vnS+dL50fnR+dH50PnQ+dD5z/nP+c/5zvnO+c75zfnN+c35zPnM+cz5y/nL+cv5yvnK+cr5yvnJ+cn5yfnI+cj5yPnH+cf5x/nH+cb5xvnG+cX5xfnF+cT5xPnE+cT5w/nD+cP5wvnC+cL5wvnB+cH5wfnA+cD5wPnA+b/5v/m/+b/5vvm++b75vvm9+b35vfm8+bz5vPm8+bv5u/m7+bv5uvm6+br5uvm5+bn5ufm5+bj5uPm4+bj5t/m3+bf5t/m2+bb5tvm2+bb5tfm1+bX5tfm0+bT5tPm0+bP5s/mz+bP5s/my+bL5svmy+bH5sfmx+bH5sfmw+bD5sPmw+bD5r/mv+a/5r/mv+a75rvmu+a75rvmt+a35rfmt+a35rPms+az5rPms+av5q/mr+av5q/mq+ar5qvmq+ar5qvmp+an5qfmp+an5qfmo+aj5qPmo+aj5qPmn+af5p/mn+af5p/mm+ab5pvmm+ab5pvmm+aX5pfml+aX5pfml+aT5pPmk+aT5pPmk+aT5o/mj+aP5o/mj+aP5o/mj+aL5ovmi+aL5ovmi+aL5ovmh+aH5ofmh+aH5ofmh+aH5oPmg+aD5oPmg+aD5oPmg+aD5oPmf+Z/5n/mf+Z/5n/mf+Z/5n/mf+Z75nvme+Z75nvme+Z75nvme+Z75nvmd+Z35nfmd+Z35nfmd+Z35nfmd+Z35nfmd+Zz5nPmc+Zz5nPmc+Zz5nPmc+Zz5nPmc+Zz5nPmc+Zz5nPmb+Zv5m/mb+Zv5m/mb+Zv5m/mb+Zv5m/mb+Zv5m/mb+Zv5m/mb+Zv5m/mb+Zv5m/mb+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvma+Zr5mvmb+Zv5m/mb+Zv5m/mb+Zv5m/mb+Zv5m/mb+Zv5m/mb+Zv5m/mb+Zv5m/mb+Zv5m/mb+Zz5nPmc+Zz5nPmc+Zz5nPmc+Zz5nPmc+Zz5nPmc+Zz5nPmd+Z35nfmd+Z35nfmd+Z35nfmd+Z35nfmd+Z75nvme+Z75nvme+Z75nvme+Z75nvmf+Z/5n/mf+Z/5n/mf+Z/5n/mf+aD5oPmg+aD5oPmg+aD5oPmg+aD5ofmh+aH5ofmh+aH5ofmh+aL5ovmi+aL5ovmi+aL5ovmj+aP5o/mj+aP5o/mj+aP5pPmk+aT5pPmk+aT5pPml+aX5pfml+aX5pfmm+ab5pvmm+ab5pvmm+af5p/mn+af5p/mn+aj5qPmo+aj5qPmo+an5qfmp+an5qfmp+ar5qvmq+ar5qvmq+av5q/mr+av5q/ms+az5rPms+az5rfmt+a35rfmt+a75rvmu+a75rvmv+a/5r/mv+a/5sPmw+bD5sPmw+bH5sfmx+bH5sfmy+bL5svmy+bP5s/mz+bP5s/m0+bT5tPm0+bX5tfm1+bX5tvm2+bb5tvm2+bf5t/m3+bf5uPm4+bj5uPm5+bn5ufm5+br5uvm6+br5u/m7+bv5u/m8+bz5vPm8+b35vfm9+b75vvm++b75v/m/+b/5v/nA+cD5wPnA+cH5wfnB+cL5wvnC+cL5w/nD+cP5xPnE+cT5xPnF+cX5xfnG+cb5xvnH+cf5x/nH+cj5yPnI+cn5yfnJ+cr5yvnK+cr5y/nL+cv5zPnM+cz5zfnN+c35zvnO+c75z/nP+c/50PnQ+dD50fnR+dH50vnS+dL50/nT+dP51PnU+dT51fnV+dX51vnW+db51/nX+df52PnY+dj52fnZ+dn52vna+dr52/nb+dz53Pnc+d353fnd+d753vne+d/53/ng+eD54Pnh+eH54fni+eL54/nj+eP55Pnk+eT55fnl+eb55vnm+ef55/no+ej56Pnp+en56vnq+er56/nr+ez57Pns+e357fnu+e757vnv+e/58Pnw+fD58fnx+fL58vny+fP58/n0+fT59fn1+fX59vn2+ff59/n4+fj5+Pn5+fn5+vn6+fv5+/n7+fz5/Pn9+f35/vn++f/5//n/+QD6APoB+gH6AvoC+gP6A/oD+gT6BPoF+gX6BvoG+gf6B/oI+gj6CfoJ+gn6CvoK+gv6C/oM+gz6DfoN+g76DvoP+g/6EPoQ+hH6EfoS+hL6EvoT+hP6FPoU+hX6FfoW+hb6F/oX+hj6GPoZ+hn6Gvoa+hv6G/oc+hz6Hfod+h76Hvof+h/6IPog+iH6Ifoi+iL6I/oj+iT6JPol+ib6Jvon+if6KPoo+in6Kfoq+ir6K/or+iz6LPot+i36Lvou+i/6MPow+jH6Mfoy+jL6M/oz+jT6NPo1+jb6Nvo3+jf6OPo4+jn6Ofo6+jr6O/o8+jz6Pfo9+j76Pvo/+kD6QPpB+kH6QvpC+kP6Q/pE+kX6RfpG+kb6R/pH+kj6SfpJ+kr6SvpL+kz6TPpN+k36TvpO+k/6UPpQ+lH6UfpS+lP6U/pU+lT6VfpW+lb6V/pX+lj6WfpZ+lr6Wvpb+lz6XPpd+l36Xvpf+l/6YPpg+mH6Yvpi+mP6ZPpk+mX6Zfpm+mf6Z/po+mn6afpq+mr6a/ps+mz6bfpu+m76b/pv+nD6cfpx+nL6c/pz+nT6dfp1+nb6d/p3+nj6ePp5+nr6evp7+nz6fPp9+n76fvp/+oD6gPqB+oL6gvqD+oT6hPqF+ob6hvqH+oj6iPqJ+or6ivqL+oz6jPqN+o76jvqP+pD6kPqR+pL6kvqT+pT6lPqV+pb6lvqX+pj6mfqZ+pr6m/qb+pz6nfqd+p76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Kf4q/iv+LP4u/i/+MP4x/jL+NP41/jb+N/45/jr+O/48/j7+P/5A/kH+Q/5E/kX+Rv5I/kn+Sv5L/kz+Tv5P/lD+Uf5T/lT+Vf5W/lj+Wf5a/lv+Xf5e/l/+YP5i/mP+ZP5l/mf+aP5p/mr+bP5t/m7+b/5x/nL+c/50/nb+d/54/nn+e/58/n3+fv6A/oH+gv6D/oX+hv6H/oj+iv6L/oz+jf6P/pD+kf6S/pT+lf6W/pf+mf6a/pv+nP6e/p/+oP6h/qP+pP6l/qb+qP6p/qr+q/6t/q7+r/6w/rL+s/60/rb+t/64/rn+u/68/r3+vv7A/sH+wv7D/sX+xv7H/sj+yv7L/sz+zv7P/tD+0f7T/tT+1f7W/tj+2f7a/tv+3f7e/t/+4P7i/uP+5P7m/uf+6P7p/uv+7P7t/u7+8P7x/vL+9P71/vb+9/75/vr++/78/v7+//4A/wH/A/8E/wX/B/8I/wn/Cv8M/w3/Dv8P/xH/Ev8T/xX/Fv8X/xj/Gv8b/xz/Hf8f/yD/If8j/yT/Jf8m/yj/Kf8q/yz/Lf8u/y//Mf8y/zP/NP82/zf/OP86/zv/PP89/z//QP9B/0L/RP9F/0b/SP9J/0r/S/9N/07/T/9R/1L/U/9U/1b/V/9Y/1r/W/9c/13/X/9g/2H/Yv9k/2X/Zv9o/2n/av9r/23/bv9v/3H/cv9z/3T/dv93/3j/ev97/3z/ff9//4D/gf+D/4T/hf+G/4j/if+K/4z/jf+O/4//kf+S/5P/lP+W/5f/mP+a/5v/nP+d/5//oP+h/6P/pP+l/6b/qP+p/6r/rP+t/67/r/+x/7L/s/+1/7b/t/+4/7r/u/+8/77/v//A/8H/w//E/8X/x//I/8n/yv/M/83/zv/Q/9H/0v/T/9X/1v/X/9n/2v/b/9z/3v/f/+D/4v/j/+T/5f/n/+j/6f/r/+z/7f/u//D/8f/y//T/9f/2//f/+f/6//v//f/+////';
     var _audio = null;
-    var _audioCtx = null; // Web Audio API 备用
+    var _audioCtx = null;
     var _unlockBound = false;
+    var _retryCount = 0;
+    var _maxRetries = 3;
+    var _autoResumeTimer = null;
+    var _pageVisible = true;
 
     function _get() { return localStorage.getItem(KEY) === 'true'; }
 
     function _createAudio() {
-        if (_audio) return _audio;
+        if (_audio) {
+            _audio.src = SRC;
+            _audio.load();
+            return _audio;
+        }
         _audio = new Audio(SRC);
         _audio.loop   = true;
-        _audio.volume = 0.01;
+        _audio.volume = 0.05;   // 5% 音量 - 足够让 iOS 认为是真实音频
         _audio.preload = 'auto';
-        _audio.addEventListener('play',  function(){ _setUI(true);  });
-        _audio.addEventListener('pause', function(){ _setUI(false); });
+        _audio.setAttribute('playsinline', 'true');      // iOS 必需：允许内联播放
+        _audio.setAttribute('webkit-playsinline', 'true'); // 旧版 iOS 兼容
+        _audio.setAttribute('webkit-playsinline', 'true');
+
+        // 播放成功
+        _audio.addEventListener('play',  function(){
+            console.log('[keepalive] 音频播放成功');
+            _retryCount = 0;
+            _setUI(true);
+            _setupMediaSession();
+        });
+        // 被暂停时自动恢复（iOS 后台挂起时会触发）
+        _audio.addEventListener('pause', function(){
+            console.log('[keepalive] 音频被暂停，尝试自动恢复');
+            _setUI(false);
+            _scheduleAutoResume();
+        });
+        // 被中断时自动恢复（其他 App 抢占音频会话）
+        _audio.addEventListener('suspend', function(){
+            console.log('[keepalive] 音频会话被挂起');
+            _setUI(false);
+            _scheduleAutoResume();
+        });
+        _audio.addEventListener('ended', function(){
+            console.log('[keepalive] 音频结束，重新播放');
+            if (_get()) {
+                _audio.currentTime = 0;
+                _audio.play().catch(function(){ _scheduleAutoResume(); });
+            }
+        });
+        _audio.addEventListener('error', function(e){
+            console.warn('[keepalive] 音频加载失败，尝试备用方案', e);
+            _fallbackWebAudio();
+        });
+        _audio.addEventListener('canplaythrough', function(){
+            console.log('[keepalive] 音频文件已就绪');
+        });
+        // iOS 专属：被其他 App 中断后，中断结束时自动恢复
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.setActionHandler('play', function(){
+                if (_get() && _audio) _audio.play().catch(function(){});
+            });
+            navigator.mediaSession.setActionHandler('pause', function(){
+                // 被系统暂停时，立即尝试恢复
+                if (_get()) _scheduleAutoResume();
+            });
+        }
         return _audio;
     }
 
-    // Web Audio API 备用方案：生成静音振荡器，不依赖外部音频文件
-    function _createWebAudioFallback() {
+    // 设置 Media Session API - 让 iOS 认为这是一个媒体播放页面
+    function _setupMediaSession() {
+        if ('mediaSession' in navigator) {
+            try {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: '保活运行中',
+                    artist: 'ZY',
+                    album: '后台保活',
+                    artwork: []
+                });
+                navigator.mediaSession.playbackState = 'playing';
+            } catch(e) {}
+        }
+    }
+
+    // 自动恢复播放：3秒内尝试3次
+    function _scheduleAutoResume() {
+        if (_autoResumeTimer) return; // 已经在等待了
+        var attempts = 0;
+        _autoResumeTimer = setInterval(function(){
+            attempts++;
+            if (!_get() || !_pageVisible) {
+                clearInterval(_autoResumeTimer);
+                _autoResumeTimer = null;
+                return;
+            }
+            if (_audio && _audio.paused) {
+                var p = _audio.play();
+                if (p && p.then) {
+                    p.then(function(){
+                        console.log('[keepalive] 自动恢复成功 (尝试 ' + attempts + ')');
+                        clearInterval(_autoResumeTimer);
+                        _autoResumeTimer = null;
+                    }).catch(function(){
+                        if (attempts >= 3) {
+                            console.warn('[keepalive] 自动恢复失败 3 次，切换到 Web Audio');
+                            _fallbackWebAudio();
+                            clearInterval(_autoResumeTimer);
+                            _autoResumeTimer = null;
+                        }
+                    });
+                }
+            } else {
+                clearInterval(_autoResumeTimer);
+                _autoResumeTimer = null;
+            }
+        }, 1000);
+    }
+
+    function _fallbackWebAudio() {
         try {
+            if (_audioCtx) return;
             var AC = window.AudioContext || window.webkitAudioContext;
-            if (!AC) return null;
+            if (!AC) { console.error('[keepalive] 浏览器不支持 Web Audio API'); return; }
             _audioCtx = new AC();
-            var oscillator = _audioCtx.createOscillator();
-            var gainNode = _audioCtx.createGain();
-            gainNode.gain.value = 0; // 静音
-            oscillator.connect(gainNode);
-            gainNode.connect(_audioCtx.destination);
-            oscillator.start();
-            console.log('[Keepalive] Web Audio API 备用方案已启动');
-            return _audioCtx;
+            var osc = _audioCtx.createOscillator();
+            var gain = _audioCtx.createGain();
+            gain.gain.value = 0.001;  // 极低音量但不是零
+            osc.frequency.value = 1;  // 1Hz 极低频
+            osc.connect(gain);
+            gain.connect(_audioCtx.destination);
+            osc.start();
+            _setUI(true);
+            console.log('[keepalive] Web Audio API 备用方案已启动');
         } catch(e) {
-            console.warn('[Keepalive] Web Audio API 备用方案创建失败:', e);
-            return null;
+            console.error('[keepalive] Web Audio 备用方案失败:', e);
         }
     }
 
@@ -249,35 +350,75 @@
         var a = _createAudio();
         var p = a.play();
         if (p && p.then) {
-            p.catch(function(err){
-                console.warn('[Keepalive] Audio 播放失败，尝试 Web Audio API 备用方案:', err);
+            p.then(function(){
+                console.log('[keepalive] 音频播放成功');
+            }).catch(function(err){
+                console.warn('[keepalive] 播放被拦截，等待用户交互', err);
                 _setUI(false);
-                // 尝试 Web Audio API 备用方案
-                _createWebAudioFallback();
-                if (!_unlockBound) {
-                    _unlockBound = true;
-                    function unlock(){
-                        if(_get()) {
-                            a.play().catch(function(e){
-                                console.warn('[Keepalive] 解锁后播放仍失败:', e);
-                                _createWebAudioFallback();
-                            });
-                        }
-                        _unlockBound=false;
-                    }
-                    document.addEventListener('touchstart', unlock, { once:true });
-                    document.addEventListener('click',      unlock, { once:true });
-                }
+                _bindUnlock();
             });
         }
     }
 
+    function _bindUnlock() {
+        if (_unlockBound) return;
+        _unlockBound = true;
+
+        function unlock(e){
+            if (!_get()) { _unlockBound = false; return; }
+
+            if (_audioCtx && _audioCtx.state === 'suspended') {
+                _audioCtx.resume().catch(function(){});
+            }
+
+            if (_audio) {
+                _audio.play().then(function(){
+                    console.log('[keepalive] 用户交互后播放成功');
+                    _retryCount = 0;
+                    _unlockBound = false;
+                    _setUI(true);
+                }).catch(function(err2){
+                    console.warn('[keepalive] 用户交互后仍失败 (尝试 ' + (_retryCount+1) + '/' + _maxRetries + ')', err2);
+                    _retryCount++;
+                    if (_retryCount >= _maxRetries) {
+                        console.log('[keepalive] 文件播放失败过多，启用 Web Audio 备用方案');
+                        _fallbackWebAudio();
+                        _unlockBound = false;
+                    } else {
+                        _unlockBound = false;
+                    }
+                });
+            } else {
+                _fallbackWebAudio();
+                _unlockBound = false;
+            }
+        }
+
+        document.addEventListener('touchstart', unlock, { once:false, passive:true });
+        document.addEventListener('click',      unlock, { once:false });
+        document.addEventListener('pointerdown', unlock, { once:false, passive:true });
+        document.addEventListener('keydown',     unlock, { once:false });
+
+        setTimeout(function(){
+            if (_unlockBound) {
+                console.log('[keepalive] 自动重试播放');
+                unlock({ type:'auto-retry' });
+            }
+        }, 500);
+    }
+
     function _stop() {
+        if (_autoResumeTimer) { clearInterval(_autoResumeTimer); _autoResumeTimer = null; }
         if (_audio) { _audio.pause(); _audio.currentTime = 0; }
         if (_audioCtx) {
-            try { _audioCtx.close(); } catch(e) { console.warn('[Keepalive] AudioContext 关闭失败:', e); }
+            try { _audioCtx.close(); } catch(e){}
             _audioCtx = null;
         }
+        if ('mediaSession' in navigator) {
+            try { navigator.mediaSession.playbackState = 'none'; } catch(e) {}
+        }
+        _retryCount = 0;
+        _unlockBound = false;
         _setUI(false);
     }
 
@@ -291,12 +432,57 @@
             _stop();
             if (typeof showNotification === 'function') showNotification('保活音频已关闭', 'info', 1500);
         }
-        _setUI(next && _audio && !_audio.paused);
+        _setUI(next && ((_audio && !_audio.paused) || (_audioCtx && _audioCtx.state === 'running')));
     };
 
+    // 页面可见性变化
     document.addEventListener('visibilitychange', function(){
-        if (_get() && document.visibilityState === 'visible' && _audio && _audio.paused) {
-            _audio.play().catch(function(e){ console.warn('[Keepalive] visibilitychange 恢复播放失败:', e); });
+        _pageVisible = (document.visibilityState === 'visible');
+        console.log('[keepalive] visibilitychange:', document.visibilityState);
+
+        if (_get() && document.visibilityState === 'visible') {
+            // 回到前台：立即恢复音频
+            if (_audioCtx && _audioCtx.state === 'suspended') {
+                _audioCtx.resume().catch(function(){});
+            }
+            if (_audio && _audio.paused) {
+                _audio.play().then(function(){
+                    console.log('[keepalive] 回到前台，音频恢复成功');
+                    _setUI(true);
+                }).catch(function(){
+                    console.warn('[keepalive] 回到前台恢复失败，等待交互');
+                    _setUI(false);
+                    _bindUnlock();
+                });
+            }
+            if ('mediaSession' in navigator) {
+                try { navigator.mediaSession.playbackState = 'playing'; } catch(e) {}
+            }
+        }
+    });
+
+    // iOS 专属：页面被挂起时（requestAnimationFrame 停止触发）
+    // 用 Page Visibility API + 定时器双重检测
+    setInterval(function(){
+        if (!_get()) return;
+        if (!_pageVisible) return;
+
+        // 如果开关开着但音频停了，尝试恢复
+        if (_audio && _audio.paused && !_autoResumeTimer) {
+            console.log('[keepalive] 检测到音频停止，尝试恢复');
+            _scheduleAutoResume();
+        }
+        if (_audioCtx && _audioCtx.state === 'suspended' && !_autoResumeTimer) {
+            _audioCtx.resume().catch(function(){});
+        }
+    }, 5000);
+
+    // 监听页面即将卸载（iOS 后台清理前）
+    window.addEventListener('pagehide', function(){
+        if (_get() && _audio) {
+            try {
+                _audio.play().catch(function(){});
+            } catch(e) {}
         }
     });
 
@@ -305,8 +491,8 @@
         if (_get()) _start();
     });
     setTimeout(function(){
-        _setUI(_get() && !!_audio && !_audio.paused);
-        if (_get() && (!_audio || _audio.paused)) _start();
+        _setUI(_get() && ((_audio && !_audio.paused) || (_audioCtx && _audioCtx.state === 'running')));
+        if (_get() && (!_audio || _audio.paused) && (!_audioCtx || _audioCtx.state !== 'running')) _start();
     }, 1800);
 })();
 

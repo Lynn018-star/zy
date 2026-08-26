@@ -9,8 +9,8 @@
   const userConfig = {
     name: '我',
     signature: '生活不止眼前的代码',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=me&backgroundColor=b6e3f4',
-    coverImage: 'https://picsum.photos/seed/cover123/800/400'
+    avatar: 'assets/external/8bddb29a6c39.binme&backgroundColor=b6e3f4',
+    coverImage: 'assets/external/996b53636747.bin'
   };
 
   // ========== 读取表情包库（与自定义回复库同步） ==========
@@ -106,6 +106,65 @@
 
   // ========== Sample Data (从 localStorage 恢复，或初始化为空) ==========
   const momentsData = [];
+
+  // ========== IndexedDB 备份存储 ==========
+  // IndexedDB 容量远大于 localStorage（通常 50MB+），作为数据备份
+  function openMomentsBackupDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open('MomentsBackupDB', 1);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('data')) {
+          db.createObjectStore('data');
+        }
+      };
+      req.onsuccess = e => resolve(e.target.result);
+      req.onerror = e => reject(e);
+    });
+  }
+
+  async function saveMomentsToIDBBackup(data) {
+    try {
+      const db = await openMomentsBackupDB();
+      const tx = db.transaction('data', 'readwrite');
+      await new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.objectStore('data').put(JSON.stringify(data), 'moments_backup');
+      });
+      console.log('[Moments] IDB 备份保存成功，共', data.length, '条');
+    } catch(e) {
+      console.warn('[Moments] IDB 备份保存失败:', e);
+    }
+  }
+
+  async function loadMomentsFromIDBBackup() {
+    try {
+      const db = await openMomentsBackupDB();
+      return new Promise(resolve => {
+        const tx = db.transaction('data', 'readonly');
+        const req = tx.objectStore('data').get('moments_backup');
+        req.onsuccess = () => {
+          if (req.result) {
+            try {
+              const parsed = JSON.parse(req.result);
+              if (Array.isArray(parsed)) {
+                console.log('[Moments] IDB 备份加载成功，共', parsed.length, '条');
+                resolve(parsed);
+                return;
+              }
+            } catch(e) {}
+          }
+          resolve(null);
+        };
+        req.onerror = () => resolve(null);
+      });
+    } catch(e) {
+      console.warn('[Moments] IDB 备份加载失败:', e);
+      return null;
+    }
+  }
+
   (function loadMomentsFromStorage() {
     try {
       const saved = localStorage.getItem('moments_data');
@@ -119,6 +178,25 @@
       }
     } catch(e) {
       console.error('[Moments] loadMomentsFromStorage 失败:', e);
+    }
+
+    // 如果 localStorage 没有数据，尝试从 IndexedDB 备份恢复
+    if (momentsData.length === 0) {
+      loadMomentsFromIDBBackup().then(backup => {
+        if (backup && backup.length > 0) {
+          backup.forEach(m => momentsData.push(m));
+          console.log('[Moments] 从 IDB 备份恢复了', backup.length, '条朋友圈');
+          // 同时写回 localStorage，下次可以直接读
+          try {
+            localStorage.setItem('moments_data', JSON.stringify(backup));
+            console.log('[Moments] 已将备份数据写回 localStorage');
+          } catch(e) {
+            console.warn('[Moments] 写回 localStorage 失败（可能超限）:', e);
+          }
+        }
+      }).catch(e => {
+        console.warn('[Moments] IDB 备份恢复失败:', e);
+      });
     }
 
     // 数据加载完成后，触发 TA的手机 历史扫描
@@ -256,8 +334,17 @@
       const jsonStr = JSON.stringify(dataToSave);
       localStorage.setItem('moments_data', jsonStr);
       console.log('[Moments] 同步保存成功，共', momentsData.length, '条，大小', Math.round(jsonStr.length / 1024), 'KB');
+      // 同时备份到 IndexedDB（防止 localStorage 超限时丢数据）
+      saveMomentsToIDBBackup(dataToSave);
     } catch(e) {
       console.warn('[Moments] 同步保存失败:', e);
+      // 即使 localStorage 失败，也要保存到 IndexedDB（完整数据，不降级）
+      saveMomentsToIDBBackup(momentsData.map(m => ({
+        ...m,
+        images: [...m.images],
+        comments: m.comments ? [...m.comments] : [],
+        likes: m.likes ? [...m.likes] : []
+      })));
       // 存储超限时，尝试将大图片替换为 IDB 引用后保存
       try {
         const reduced = momentsData.map(m => {
@@ -277,34 +364,34 @@
         console.warn('[Moments] 已降级保存（大图片替换为IDB引用）');
       } catch(e2) {
         console.error('[Moments] 降级保存也失败:', e2);
-        // 进一步降级方案：纯文本保存
+        // 最终方案：移除所有图片和视频数据，只保留文字
         try {
-          const textOnly = momentsData.map(m => ({
-            ...m,
-            images: m.images.map(img => typeof img === 'string' && img.length > 100 ? '[图片]' : img),
-            video: m.video ? { ...m.video, url: '[视频]' } : null
-          }));
+          const textOnly = momentsData.map(m => {
+            const saved = { ...m, images: m.images ? m.images.map(img =>
+              typeof img === 'string' && img.length > 100 ? '[图片]' : img
+            ) : [] };
+            if (saved.video) saved.video = { ...saved.video, url: '[视频]' };
+            return saved;
+          });
           localStorage.setItem('moments_data', JSON.stringify(textOnly));
-          console.warn('[Moments] 已降级保存（纯文本模式）');
+          console.warn('[Moments] 已启用纯文本降级保存（图片视频已移除）');
+          // 提示用户
+          setTimeout(function() {
+            alert('朋友圈存储空间已满！为保留文字记录，图片和视频已被临时移除。建议尽快导出备份后清理旧数据。\n\n注意：完整数据已备份到 IndexedDB，刷新后仍可恢复。');
+          }, 100);
         } catch(e3) {
           console.error('[Moments] 纯文本保存也失败:', e3);
-          // 最终降级：只保留最近20条纯文本
+          // 尝试只保留最近20条
           try {
-            const recent20 = momentsData.slice(-20).map(m => ({
-              ...m,
-              images: m.images.map(img => typeof img === 'string' && img.length > 100 ? '[图片]' : img),
-              video: m.video ? { ...m.video, url: '[视频]' } : null
+            const recent = momentsData.slice(-20).map(m => ({
+              ...m, images: [], video: null
             }));
-            localStorage.setItem('moments_data', JSON.stringify(recent20));
-            console.warn('[Moments] 已降级保存（仅最近20条纯文本）');
-            if (typeof showNotification === 'function') {
-              showNotification('朋友圈数据过大，已仅保留最近20条', 'warning', 5000);
-            }
+            localStorage.setItem('moments_data', JSON.stringify(recent));
+            console.warn('[Moments] 已启用极限降级保存（仅最近20条，无图片）');
           } catch(e4) {
-            console.error('[Moments] 所有降级保存均失败:', e4);
-            if (typeof showNotification === 'function') {
-              showNotification('朋友圈数据保存失败，请导出备份', 'error', 5000);
-            }
+            console.error('[Moments] 所有保存方案均失败:', e4);
+            // localStorage 完全失败，但 IndexedDB 备份已经保存了完整数据
+            console.log('[Moments] localStorage 全部失败，但 IDB 备份已保存完整数据');
           }
         }
       }
@@ -339,8 +426,17 @@
         dataToSave.push(saved);
       }
       localStorage.setItem('moments_data', JSON.stringify(dataToSave));
+      // 同时备份到 IndexedDB
+      saveMomentsToIDBBackup(dataToSave);
     } catch(e) {
       console.warn('保存朋友圈数据失败（可能超出存储限制）:', e);
+      // 即使 localStorage 失败，也保存到 IndexedDB
+      saveMomentsToIDBBackup(momentsData.map(m => ({
+        ...m,
+        images: [...m.images],
+        comments: m.comments ? [...m.comments] : [],
+        likes: m.likes ? [...m.likes] : []
+      })));
       // 存储超限时，尝试只保存文本数据（不含图片）
       try {
         const textOnly = momentsData.map(m => ({
@@ -360,11 +456,11 @@
 
   // 缓存系统（伴侣）信息，避免每次都异步读取
   let cachedPartnerName = '梦角';
-  let cachedPartnerAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=partner&backgroundColor=c0aede';
+  let cachedPartnerAvatar = 'assets/external/8bddb29a6c39.binpartner&backgroundColor=c0aede';
 
   async function loadPartnerInfo() {
     let partnerName = '梦角';
-    let partnerAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=partner&backgroundColor=c0aede';
+    let partnerAvatar = 'assets/external/8bddb29a6c39.binpartner&backgroundColor=c0aede';
 
     try {
       // 1. 从 settings 获取（最低优先级）
@@ -1563,7 +1659,7 @@
       html += `
         <div class="visitor-item" data-visitor-id="${record.id}">
           <div class="visitor-item-inner" ontouchstart="MomentsApp._visitorTouchStart(event,'${record.id}')" ontouchmove="MomentsApp._visitorTouchMove(event,'${record.id}')" ontouchend="MomentsApp._visitorTouchEnd(event,'${record.id}')">
-            <img class="visitor-avatar" src="${partnerAvatar}" alt="${partnerName}" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=partner&backgroundColor=c0aede'">
+            <img class="visitor-avatar" src="${partnerAvatar}" alt="${partnerName}" onerror="this.src='assets/external/8bddb29a6c39.binpartner&backgroundColor=c0aede'">
             <div class="visitor-info">
               <div class="visitor-name">${partnerName}${streakTag}</div>
               <div class="visitor-time">${visitTimeStr}</div>
@@ -3248,7 +3344,7 @@
           const settingsKey = APP_PREFIX + sid + '_chatSettings';
           const chatSettings = typeof localforage !== 'undefined' ? await localforage.getItem(settingsKey) : null;
           let name = '梦角';
-          let avatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(sid) + '&backgroundColor=c0aede';
+          let avatar = 'assets/external/8bddb29a6c39.bin' + encodeURIComponent(sid) + '&backgroundColor=c0aede';
 
           if (chatSettings && typeof chatSettings === 'object') {
             if (chatSettings.partnerName) name = chatSettings.partnerName;
@@ -3479,7 +3575,7 @@
     momentsFriends.push({
       id: 'friend_' + Date.now(),
       name: name,
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(name) + '&backgroundColor=c0aede',
+      avatar: 'assets/external/8bddb29a6c39.bin' + encodeURIComponent(name) + '&backgroundColor=c0aede',
       isPartner: false
     });
     saveMomentsFriends();

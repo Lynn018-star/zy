@@ -163,7 +163,7 @@ function deduplicateContentArray(arr, baseSystemArray = []) {
                     ? customUrlByCategory.trim()
                     : legacyCustomUrl;
 
-                const KAKAO_TALK_URL = 'https://image.uglycat.cc/jl5xf9.mp3';
+                const KAKAO_TALK_URL = 'assets/external/jl5xf9.mp3';
 
                 // 预设音效（无音效 / kakaoTalk）需要优先级高于自定义 URL
                 const presetId = (() => {
@@ -234,6 +234,10 @@ function deduplicateContentArray(arr, baseSystemArray = []) {
 
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 _currentAudioContext = audioContext;
+                // iOS 需要手动 resume 才能出声
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume().catch(function(){});
+                }
                 const gainNode = audioContext.createGain();
                 const vol = Math.min(0.55, Math.max(0.01, settings.soundVolume || 0.1));
 
@@ -276,8 +280,45 @@ function deduplicateContentArray(arr, baseSystemArray = []) {
                 audioContext.addEventListener('statechange', () => {
                     if (audioContext.state === 'closed') _currentAudioContext = null;
                 });
-            } catch (e) { console.warn("音频播放失败:", e); }
+            } catch (e) { console.warn("音频播放失败:", e); };
         };
+
+        // iOS AudioContext 解锁：第一次用户交互时创建并 resume AudioContext
+        // 这样后续 playSound 调用才能正常出声
+        (function unlockAudioContext() {
+            var _unlocked = false;
+            function unlock() {
+                if (_unlocked) return;
+                _unlocked = true;
+                try {
+                    var AC = window.AudioContext || window.webkitAudioContext;
+                    if (!AC) return;
+                    var ctx = new AC();
+                    ctx.resume().then(function() {
+                        console.log('[audio] AudioContext 解锁成功');
+                        // 创建一个静音的 oscillator 来"激活"音频会话
+                        var osc = ctx.createOscillator();
+                        var gain = ctx.createGain();
+                        gain.gain.value = 0.0001;
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.01);
+                        // 延迟关闭，保持音频会话活跃
+                        setTimeout(function() { ctx.close().catch(function(){}); }, 100);
+                    }).catch(function(e) {
+                        console.warn('[audio] AudioContext 解锁失败:', e);
+                    });
+                } catch(e) {
+                    console.warn('[audio] AudioContext 解锁异常:', e);
+                }
+            }
+            // iOS 需要用户交互才能解锁音频
+            document.addEventListener('touchstart', unlock, { once: true, passive: true });
+            document.addEventListener('click', unlock, { once: true });
+            document.addEventListener('pointerdown', unlock, { once: true, passive: true });
+            document.addEventListener('keydown', unlock, { once: true });
+        })();
 
         const throttledSaveData = () => {
             if (typeof saveTimeout !== 'undefined') clearTimeout(saveTimeout);
