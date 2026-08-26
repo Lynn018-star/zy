@@ -97,9 +97,64 @@ async function checkEnvelopeStatus() {
 
     if (changed) {
         saveEnvelopeData();
-        if (newReplyLetter) showEnvelopeReplyPopup(newReplyLetter);
+        if (newReplyLetter) {
+            // 记录待显示的回信通知（防止页面在后台时通知丢失）
+            try {
+                localStorage.setItem('envelope_pending_reply', JSON.stringify({
+                    id: newReplyLetter.id,
+                    content: newReplyLetter.content,
+                    receivedTime: newReplyLetter.receivedTime,
+                    timestamp: Date.now()
+                }));
+            } catch(e) {}
+            showEnvelopeReplyPopup(newReplyLetter);
+        }
     }
 }
+
+// 页面回到前台时，检查是否有未显示的回信通知
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        // 延迟一点检查，确保页面已完全恢复
+        setTimeout(function() {
+            try {
+                var pending = localStorage.getItem('envelope_pending_reply');
+                if (pending) {
+                    var replyData = JSON.parse(pending);
+                    // 检查是否已经显示过（通过 DOM 检查）
+                    var existing = document.getElementById('envelope-reply-popup');
+                    if (!existing) {
+                        // 重新检查信封状态（可能在后台时有新的回信）
+                        if (typeof checkEnvelopeStatus === 'function') {
+                            checkEnvelopeStatus().then(function() {
+                                // checkEnvelopeStatus 内部会处理通知
+                            }).catch(function(e) {});
+                        }
+                        // 显示之前记录的通知
+                        showEnvelopeReplyPopup(replyData);
+                    }
+                    // 清除待处理标记
+                    localStorage.removeItem('envelope_pending_reply');
+                } else {
+                    // 即使没有 pending_reply，也重新检查状态
+                    // 因为后台时 checkEnvelopeStatus 可能没被调用
+                    if (typeof checkEnvelopeStatus === 'function') {
+                        checkEnvelopeStatus().catch(function(e) {});
+                    }
+                }
+            } catch(e) {
+                console.warn('[envelope] 恢复通知检查失败:', e);
+            }
+        }, 500);
+    }
+});
+
+// 定时检查信封状态（每 30 秒，补充后台时可能错过的检查）
+setInterval(function() {
+    if (typeof checkEnvelopeStatus === 'function') {
+        checkEnvelopeStatus().catch(function(e) {});
+    }
+}, 30000);
 
 function showEnvelopeReplyPopup(letter) {
     const existing = document.getElementById('envelope-reply-popup');
@@ -121,7 +176,8 @@ function showEnvelopeReplyPopup(letter) {
             <button onclick="openEnvelopeAndViewReply('${letter.id}');" style="flex:2;padding:8px 0;border-radius:12px;border:none;background:var(--accent-color);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">立即阅读 ✉</button>
         </div>`;
     document.body.appendChild(popup);
-    setTimeout(() => { if (popup.parentNode) popup.remove(); }, 8000);
+    // 延长自动消失时间到 15 秒，并在用户点击时清除 pending 标记
+    setTimeout(() => { if (popup.parentNode) { popup.remove(); localStorage.removeItem('envelope_pending_reply'); } }, 15000);
 }
 
 const APPEARANCE_PANEL_TITLES = {
