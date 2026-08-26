@@ -9,11 +9,13 @@
     <meta name="theme-color" content="#000000">
 
     <title>传讯</title>
-    <link rel="stylesheet" href="lib/fonts/google-fonts.css">
-    <link rel="stylesheet" href="lib/fontawesome/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/shop.css">
-    <link rel="icon" type="image/jpeg" sizes="192x192" href="assets/favicon.jpeg">
-    <link rel="apple-touch-icon" href="assets/favicon.jpeg">
+    <link rel="icon" type="image/png" sizes="192x192" href="https://file.youtochat.com/images/20260216/1771224856844_qdqqd.jpeg">
+    <link rel="apple-touch-icon" href="https://file.youtochat.com/images/20260216/1771224856844_qdqqd.jpeg">
     <meta name="apple-mobile-web-app-title" content="ʚ𝑳𝑶𝑽𝑬ɞ">
     <script>
         // 确保 applyTheme 可用
@@ -23,8 +25,8 @@
         };
     </script>
 
-    <script src="lib/localforage/localforage.min.js"></script>
-    <script src="lib/jszip/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/diary.css">
@@ -382,10 +384,10 @@
             <!-- 头像：骑在分界线上 -->
             <div class="hero-avatars-float">
                 <div class="hero-avatar-wrap hero-avatar-left" onclick="event.stopPropagation(); showProfile('me')">
-                    <img class="hero-avatar" id="avatar-me" src="assets/avatars/avatar-me.svg" alt="我">
+                    <img class="hero-avatar" id="avatar-me" src="https://api.dicebear.com/7.x/avataaars/svg?seed=me" alt="我">
                 </div>
                 <div class="hero-avatar-wrap hero-avatar-right" onclick="event.stopPropagation(); showProfile('partner')">
-                    <img class="hero-avatar" id="avatar-partner" src="assets/avatars/avatar-partner.svg" alt="梦角">
+                    <img class="hero-avatar" id="avatar-partner" src="https://api.dicebear.com/7.x/avataaars/svg?seed=partner" alt="梦角">
                     <button class="hero-session-switch-btn" id="hero-session-switch-btn" title="切换会话" onclick="event.stopPropagation(); window.showSessionSwitcher()">
                         <i class="fas fa-exchange-alt"></i>
                     </button>
@@ -938,11 +940,11 @@
                 </div>
                 <div class="avatar-customize-row">
                     <div class="avatar-customize-item" onclick="changeAvatar('me')">
-                        <img id="customize-avatar-me" src="assets/avatars/avatar-me.svg" class="avatar-customize-preview">
+                        <img id="customize-avatar-me" src="https://api.dicebear.com/7.x/avataaars/svg?seed=me" class="avatar-customize-preview">
                         <span>我的头像</span>
                     </div>
                     <div class="avatar-customize-item" onclick="changeAvatar('partner')">
-                        <img id="customize-avatar-partner" src="assets/avatars/avatar-partner.svg" class="avatar-customize-preview">
+                        <img id="customize-avatar-partner" src="https://api.dicebear.com/7.x/avataaars/svg?seed=partner" class="avatar-customize-preview">
                         <span>梦角头像</span>
                     </div>
                 </div>
@@ -1103,7 +1105,7 @@
             <div id="profile-view-mode">
                 <div class="profile-avatar-section">
                     <div class="profile-avatar-wrapper" onclick="changeAvatarFromProfile()">
-                        <img id="profile-avatar-img" src="assets/avatars/avatar-me.svg" alt="头像" class="profile-avatar-img">
+                        <img id="profile-avatar-img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=me" alt="头像" class="profile-avatar-img">
                         <div class="profile-avatar-edit">📷</div>
                     </div>
                     <div class="profile-name" id="profile-name">我</div>
@@ -1137,7 +1139,7 @@
                 </div>
 
                 <div class="profile-edit-avatar" onclick="changeAvatarFromProfile()">
-                    <img id="profile-edit-avatar-img" src="assets/avatars/avatar-me.svg" alt="头像">
+                    <img id="profile-edit-avatar-img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=me" alt="头像">
                     <div class="profile-edit-avatar-badge">📷 更换</div>
                 </div>
 
@@ -1688,7 +1690,7 @@
                         <div class="info">
                             <span class="name" id="userName">我</span>
                         </div>
-                        <img class="avatar" id="userAvatar" src="assets/avatars/avatar-me-bg.svg" alt="头像" onclick="MomentsApp.openCollectionPanel()" style="cursor:pointer;">
+                        <img class="avatar" id="userAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=me&backgroundColor=b6e3f4" alt="头像" onclick="MomentsApp.openCollectionPanel()" style="cursor:pointer;">
                     </div>
                     <span class="signature" id="userSignature">生活不止眼前的代码</span>
                 </div>
@@ -3358,31 +3360,6 @@
                                         <input type="text" id="sound-partner-poke-custom-url" placeholder="可填自定义URL（留空用内置预设）" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:8px;font-size:12px;background:var(--primary-bg);color:var(--text-primary);outline:none;">
                                         <button id="upload-sound-partner-poke-btn" class="modal-btn modal-btn-secondary" style="padding:6px 10px;font-size:12px;white-space:nowrap;" title="上传本地音频文件"><i class="fas fa-upload"></i></button>
                                         <input type="file" id="upload-sound-partner-poke-file" accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,audio/*" style="display:none;">
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">通话来电铃声</div>
-                                    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
-                                        <select id="sound-call-ringtone-preset" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:8px;font-size:12px;background:var(--primary-bg);color:var(--text-primary);outline:none;font-family:var(--font-family);">
-                                            <option value="mute">无铃声</option>
-                                            <option value="kakaotalk">kakaotalk</option>
-                                            <option value="tone_default">内置：默认</option>
-                                            <option value="tone_soft">内置：柔和</option>
-                                            <option value="tone_low">内置：低沉</option>
-                                            <option value="tone_warm">内置：厚暖</option>
-                                            <option value="tone_dark">内置：暗夜</option>
-                                            <option value="tone_haze">内置：雾感</option>
-                                            <option value="ring_classic">内置：经典铃声</option>
-                                            <option value="ring_bell">内置：电话铃</option>
-                                            <option value="ring_digital">内置：电子铃</option>
-                                        </select>
-                                        <button id="test-sound-call-ringtone-btn" class="modal-btn modal-btn-secondary" style="padding:6px 10px;font-size:12px;white-space:nowrap;"><i class="fas fa-play"></i> 试听</button>
-                                    </div>
-                                    <div style="display:flex;gap:6px;align-items:center;">
-                                        <input type="text" id="sound-call-ringtone-custom-url" placeholder="可填自定义URL（留空用内置预设）" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:8px;font-size:12px;background:var(--primary-bg);color:var(--text-primary);outline:none;">
-                                        <button id="upload-sound-call-ringtone-btn" class="modal-btn modal-btn-secondary" style="padding:6px 10px;font-size:12px;white-space:nowrap;" title="上传本地音频文件"><i class="fas fa-upload"></i></button>
-                                        <input type="file" id="upload-sound-call-ringtone-file" accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,audio/*" style="display:none;">
                                     </div>
                                 </div>
                             </div>
