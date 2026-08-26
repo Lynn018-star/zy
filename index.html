@@ -9,11 +9,11 @@
     <meta name="theme-color" content="#000000">
 
     <title>传讯</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="lib/fonts/google-fonts.css">
+    <link rel="stylesheet" href="lib/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="css/shop.css">
-    <link rel="icon" type="image/jpeg" sizes="192x192" href="https://zunitear.github.io/ZY/assets/favicon.jpeg">
-    <link rel="apple-touch-icon" href="https://zunitear.github.io/ZY/assets/favicon.jpeg">
+    <link rel="icon" type="image/jpeg" sizes="192x192" href="assets/favicon.jpeg">
+    <link rel="apple-touch-icon" href="assets/favicon.jpeg">
     <meta name="apple-mobile-web-app-title" content="ʚ𝑳𝑶𝑽𝑬ɞ">
     <script>
         // 确保 applyTheme 可用
@@ -23,8 +23,8 @@
         };
     </script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="lib/localforage/localforage.min.js"></script>
+    <script src="lib/jszip/jszip.min.js"></script>
 
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/diary.css">
@@ -3358,6 +3358,31 @@
                                         <input type="text" id="sound-partner-poke-custom-url" placeholder="可填自定义URL（留空用内置预设）" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:8px;font-size:12px;background:var(--primary-bg);color:var(--text-primary);outline:none;">
                                         <button id="upload-sound-partner-poke-btn" class="modal-btn modal-btn-secondary" style="padding:6px 10px;font-size:12px;white-space:nowrap;" title="上传本地音频文件"><i class="fas fa-upload"></i></button>
                                         <input type="file" id="upload-sound-partner-poke-file" accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,audio/*" style="display:none;">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">通话来电铃声</div>
+                                    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+                                        <select id="sound-call-ringtone-preset" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:8px;font-size:12px;background:var(--primary-bg);color:var(--text-primary);outline:none;font-family:var(--font-family);">
+                                            <option value="mute">无铃声</option>
+                                            <option value="kakaotalk">kakaotalk</option>
+                                            <option value="tone_default">内置：默认</option>
+                                            <option value="tone_soft">内置：柔和</option>
+                                            <option value="tone_low">内置：低沉</option>
+                                            <option value="tone_warm">内置：厚暖</option>
+                                            <option value="tone_dark">内置：暗夜</option>
+                                            <option value="tone_haze">内置：雾感</option>
+                                            <option value="ring_classic">内置：经典铃声</option>
+                                            <option value="ring_bell">内置：电话铃</option>
+                                            <option value="ring_digital">内置：电子铃</option>
+                                        </select>
+                                        <button id="test-sound-call-ringtone-btn" class="modal-btn modal-btn-secondary" style="padding:6px 10px;font-size:12px;white-space:nowrap;"><i class="fas fa-play"></i> 试听</button>
+                                    </div>
+                                    <div style="display:flex;gap:6px;align-items:center;">
+                                        <input type="text" id="sound-call-ringtone-custom-url" placeholder="可填自定义URL（留空用内置预设）" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:8px;font-size:12px;background:var(--primary-bg);color:var(--text-primary);outline:none;">
+                                        <button id="upload-sound-call-ringtone-btn" class="modal-btn modal-btn-secondary" style="padding:6px 10px;font-size:12px;white-space:nowrap;" title="上传本地音频文件"><i class="fas fa-upload"></i></button>
+                                        <input type="file" id="upload-sound-call-ringtone-file" accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,audio/*" style="display:none;">
                                     </div>
                                 </div>
                             </div>
