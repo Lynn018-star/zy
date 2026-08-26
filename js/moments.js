@@ -534,6 +534,14 @@
       const savedCover = localStorage.getItem('moments_cover');
       if (savedCover) {
         userConfig.coverImage = savedCover;
+      } else if (window.localforage) {
+        // localStorage 没有，尝试从 IndexedDB 恢复
+        const idbCover = await localforage.getItem('moments_cover_idb');
+        if (idbCover) {
+          userConfig.coverImage = idbCover;
+          // 回写到 localStorage（如果空间允许）
+          try { localStorage.setItem('moments_cover', idbCover); } catch(e) {}
+        }
       }
     } catch(e) {}
     
@@ -3682,8 +3690,20 @@
     }
     if (coverPreview && coverPreview.dataset.base64) {
       userConfig.coverImage = coverPreview.dataset.base64;
-      // 持久化封面背景
-      localStorage.setItem('moments_cover', coverPreview.dataset.base64);
+      // 持久化封面背景：优先 localStorage，超限时降级到 IndexedDB
+      try {
+        localStorage.setItem('moments_cover', coverPreview.dataset.base64);
+      } catch(e) {
+        console.warn('[Moments] localStorage 保存封面失败，降级到 IndexedDB:', e);
+        // 清掉旧的 localStorage 封面，释放空间
+        try { localStorage.removeItem('moments_cover'); } catch(e2) {}
+        // 保存到 IndexedDB（容量大得多）
+        if (window.localforage) {
+          localforage.setItem('moments_cover_idb', coverPreview.dataset.base64).catch(function(e3) {
+            console.error('[Moments] IndexedDB 保存封面也失败:', e3);
+          });
+        }
+      }
     }
     
     await initUserInfo();

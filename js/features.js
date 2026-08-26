@@ -261,14 +261,26 @@
     function _setupMediaSession() {
         if ('mediaSession' in navigator) {
             try {
+                // 构建图标绝对 URL（iOS 要求 artwork 使用绝对路径）
+                var iconUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'assets/favicon.jpeg';
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: '保活运行中',
                     artist: 'ZY',
                     album: '后台保活',
-                    artwork: []
+                    artwork: [
+                        { src: iconUrl, sizes: '96x96',   type: 'image/jpeg' },
+                        { src: iconUrl, sizes: '128x128',  type: 'image/jpeg' },
+                        { src: iconUrl, sizes: '192x192',  type: 'image/jpeg' },
+                        { src: iconUrl, sizes: '256x256',  type: 'image/jpeg' },
+                        { src: iconUrl, sizes: '384x384',  type: 'image/jpeg' },
+                        { src: iconUrl, sizes: '512x512',  type: 'image/jpeg' }
+                    ]
                 });
                 navigator.mediaSession.playbackState = 'playing';
-            } catch(e) {}
+                console.log('[Keepalive] Media Session 已设置，图标:', iconUrl);
+            } catch(e) {
+                console.warn('[Keepalive] Media Session 设置失败:', e);
+            }
         }
     }
 

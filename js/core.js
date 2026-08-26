@@ -201,6 +201,8 @@ autoSendInterval: 5,
         myPokeCustomSoundUrl: '',
         partnerPokeSoundPreset: 'tone_low',
         partnerPokeCustomSoundUrl: '',
+        callRingtonePreset: 'ring_classic',
+        callRingtoneCustomUrl: '',
         soundVolume: 0.15,
         bottomCollapseMode: false,
         emojiMixEnabled: true,
@@ -647,9 +649,9 @@ function _backupCriticalData() {
         };
 
         let payloadToStore = backupPayload;
-        const msgSizeEstimate = messages.length * 500; 
+        const msgSizeEstimate = messages.length * 500;
         if (msgSizeEstimate > 3 * 1024 * 1024) {
-            // 逐步降级：先尝试保留最近500条
+            // 逐步降级：先尝试保留500条
             payloadToStore = {
                 ...backupPayload,
                 messages: messages.slice(-500),
@@ -660,17 +662,15 @@ function _backupCriticalData() {
         const json = JSON.stringify(payloadToStore);
 
         if (json.length > 4.5 * 1024 * 1024) {
-            // 中间步骤：先尝试保留最近200条
+            // 再降级到200条
             const midPayload = {
                 ...payloadToStore,
                 messages: messages.slice(-200),
                 _truncated: true
             };
             const midJson = JSON.stringify(midPayload);
-            if (midJson.length <= 4.5 * 1024 * 1024) {
-                localStorage.setItem(_BACKUP_PREFIX + SESSION_ID + '_critical', midJson);
-            } else {
-                // 最终降级：只保留最近50条
+            if (midJson.length > 4.5 * 1024 * 1024) {
+                // 最后降级到50条
                 const smallerPayload = {
                     ...payloadToStore,
                     messages: messages.slice(-50),
@@ -678,6 +678,8 @@ function _backupCriticalData() {
                 };
                 const smallerJson = JSON.stringify(smallerPayload);
                 localStorage.setItem(_BACKUP_PREFIX + SESSION_ID + '_critical', smallerJson);
+            } else {
+                localStorage.setItem(_BACKUP_PREFIX + SESSION_ID + '_critical', midJson);
             }
         } else {
             localStorage.setItem(_BACKUP_PREFIX + SESSION_ID + '_critical', json);
@@ -935,9 +937,27 @@ function manageAutoSendTimer() {
     if (settings.autoSendEnabled) {
         const intervalMs = settings.autoSendInterval * 60 * 1000;
         
+        // 检查是否有错过的消息需要补发（页面被杀后重新加载时）
+        try {
+            var lastSendStr = localStorage.getItem('autoSend_lastSendTime');
+            var lastSendTime = lastSendStr ? parseInt(lastSendStr) : 0;
+            var now = Date.now();
+            if (lastSendTime > 0 && now - lastSendTime > intervalMs) {
+                // 页面被杀期间错过了至少一次发送，补发一条
+                console.log('[autoSend] 检测到错过发送，补发一条消息');
+                setTimeout(function() {
+                    if (!document.body.classList.contains('batch-favorite-mode')) {
+                        simulateReply();
+                    }
+                    localStorage.setItem('autoSend_lastSendTime', Date.now().toString());
+                }, 3000); // 延迟3秒等页面完全加载
+            }
+        } catch(e) {}
+        
         autoSendTimer = setInterval(() => {
             if (!document.body.classList.contains('batch-favorite-mode')) {
                 simulateReply(); 
+                try { localStorage.setItem('autoSend_lastSendTime', Date.now().toString()); } catch(e) {}
             }
         }, intervalMs);
     }

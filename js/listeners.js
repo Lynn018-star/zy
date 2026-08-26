@@ -536,6 +536,9 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
 
     setSelect('sound-partner-poke-preset', settings.partnerPokeSoundPreset || 'tone_low');
     setSoundUrlInput('sound-partner-poke-custom-url', (settings.partnerPokeCustomSoundUrl || '').trim() || legacyCustom);
+
+    setSelect('sound-call-ringtone-preset', settings.callRingtonePreset || 'ring_classic');
+    setSoundUrlInput('sound-call-ringtone-custom-url', (settings.callRingtoneCustomUrl || '').trim());
     document.querySelectorAll('.time-fmt-opt').forEach(opt => {
         opt.classList.toggle('active', opt.dataset.fmt === (settings.timeFormat || 'HH:mm'));
     });
@@ -1204,6 +1207,7 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
             bindPresetSelect('sound-partner-message-preset', 'partnerMessageSoundPreset');
             bindPresetSelect('sound-my-poke-preset', 'myPokeSoundPreset');
             bindPresetSelect('sound-partner-poke-preset', 'partnerPokeSoundPreset');
+            bindPresetSelect('sound-call-ringtone-preset', 'callRingtonePreset');
 
             const bindCustomUrlInput = (inputId, settingsKey) => {
                 const el = document.getElementById(inputId);
@@ -1222,6 +1226,7 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
             bindCustomUrlInput('sound-partner-message-custom-url', 'partnerMessageCustomSoundUrl');
             bindCustomUrlInput('sound-my-poke-custom-url', 'myPokeCustomSoundUrl');
             bindCustomUrlInput('sound-partner-poke-custom-url', 'partnerPokeCustomSoundUrl');
+            bindCustomUrlInput('sound-call-ringtone-custom-url', 'callRingtoneCustomUrl');
 
             // 本地音频文件上传
             const bindAudioUpload = (btnId, fileInputId, urlInputId, settingsKey, presetSelectId) => {
@@ -1254,6 +1259,7 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
             bindAudioUpload('upload-sound-partner-message-btn', 'upload-sound-partner-message-file', 'sound-partner-message-custom-url', 'partnerMessageCustomSoundUrl', 'sound-partner-message-preset');
             bindAudioUpload('upload-sound-my-poke-btn', 'upload-sound-my-poke-file', 'sound-my-poke-custom-url', 'myPokeCustomSoundUrl', 'sound-my-poke-preset');
             bindAudioUpload('upload-sound-partner-poke-btn', 'upload-sound-partner-poke-file', 'sound-partner-poke-custom-url', 'partnerPokeCustomSoundUrl', 'sound-partner-poke-preset');
+            bindAudioUpload('upload-sound-call-ringtone-btn', 'upload-sound-call-ringtone-file', 'sound-call-ringtone-custom-url', 'callRingtoneCustomUrl', 'sound-call-ringtone-preset');
 
             const btnMySend = document.getElementById('test-sound-my-send-btn');
             if (btnMySend) btnMySend.addEventListener('click', () => playSound('my_send'));
@@ -1266,6 +1272,14 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
 
             const btnPartnerPoke = document.getElementById('test-sound-partner-poke-btn');
             if (btnPartnerPoke) btnPartnerPoke.addEventListener('click', () => playSound('partner_poke'));
+
+            // 通话铃声试听：播放 3 秒后停止
+            const btnCallRingtone = document.getElementById('test-sound-call-ringtone-btn');
+            if (btnCallRingtone) btnCallRingtone.addEventListener('click', () => {
+                if (typeof window.callFeature !== 'undefined' && window.callFeature.testRingtone) {
+                    window.callFeature.testRingtone();
+                }
+            });
 
             document.querySelectorAll('.time-fmt-opt').forEach(opt => {
                 opt.classList.toggle('active', opt.dataset.fmt === (settings.timeFormat || 'HH:mm'));
