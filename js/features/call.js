@@ -6,6 +6,184 @@
     const KEY_SIZE     = 'callWindowSize';
     const KEY_PILL_POS = 'callPillPos';
     const BG_LF_KEY    = 'callBgImageData';
+    const CALL_STATE_KEY = 'call_activeState'; // 保存通话中断状态
+
+    // 保存通话状态到 localStorage（防止后台被杀时丢失通话记录）
+    function saveCallState() {
+        if (!S.active) {
+            localStorage.removeItem(CALL_STATE_KEY);
+            return;
+        }
+        try {
+            localStorage.setItem(CALL_STATE_KEY, JSON.stringify({
+                startTime: S.startTime,
+                elapsed: S.elapsed,
+                partnerName: getName(),
+                isPartnerCall: S.isPartnerCall,
+                savedAt: Date.now()
+            }));
+        } catch(e) {}
+    }
+
+    // 恢复中断的通话记录
+    function restoreInterruptedCall() {
+        try {
+            var raw = localStorage.getItem(CALL_STATE_KEY);
+            if (!raw) return;
+            var state = JSON.parse(raw);
+            localStorage.removeItem(CALL_STATE_KEY);
+
+            // 如果保存时间超过 2 小时，认为是过期数据，不恢复
+            if (Date.now() - state.savedAt > 2 * 60 * 60 * 1000) return;
+
+            var dur = state.elapsed || 0;
+            // 估算：如果保存后还有时间流逝，加上去（最多加 60 秒）
+            var gap = Date.now() - state.savedAt;
+            if (gap > 0 && gap < 60000) {
+                dur += gap;
+            } else if (gap >= 60000) {
+                dur += 60000; // 最多加 1 分钟
+            }
+
+            // 只保存超过 3 秒的通话记录
+            if (dur < 3000) return;
+
+            // 发送通话记录
+            var durStr = fmt(dur);
+            sendCallEvent('fa-video', '视频通话已结束（中断恢复）', durStr);
+
+            if (typeof showNotification === 'function') {
+                showNotification('已恢复中断的通话记录 · ' + durStr, 'info', 3000);
+            }
+            console.log('[call] 恢复中断的通话记录，时长:', durStr);
+        } catch(e) {
+            console.warn('[call] 恢复通话记录失败:', e);
+            try { localStorage.removeItem(CALL_STATE_KEY); } catch(e2) {}
+        }
+    }
+
+    // ========== 通话来电铃声 ==========
+    var _ringtoneAudio = null;      // Audio 对象（URL 类铃声）
+    var _ringtoneCtx = null;        // Web Audio Context（合成铃声）
+    var _ringtoneTimer = null;      // 定时器（控制铃声循环）
+
+    function startRingtone() {
+        stopRingtone(); // 先清理之前的
+
+        var preset = 'ring_classic';
+        var customUrl = '';
+        try {
+            if (typeof settings !== 'undefined') {
+                preset = settings.callRingtonePreset || 'ring_classic';
+                customUrl = settings.callRingtoneCustomUrl || '';
+            }
+        } catch(e) {}
+
+        if (preset === 'mute') return;
+
+        var vol = 0.5;
+        try {
+            vol = Math.min(0.8, Math.max(0.05, (settings.soundVolume || 0.15) * 3));
+        } catch(e) {}
+
+        // kakaotalk 或自定义 URL：用 Audio 对象循环播放
+        if (preset === 'kakaotalk' || customUrl) {
+            var url = (preset === 'kakaotalk') ? 'assets/external/jl5xf9.mp3' : customUrl;
+            try {
+                _ringtoneAudio = new Audio(url);
+                _ringtoneAudio.loop = true;
+                _ringtoneAudio.volume = vol;
+                _ringtoneAudio.play().catch(function(e) {
+                    console.warn('[call] 铃声播放失败:', e);
+                });
+                return;
+            } catch(e) {
+                console.warn('[call] 铃声 Audio 创建失败:', e);
+            }
+        }
+
+        // 合成铃声：用 Web Audio API 生成重复的铃声模式
+        try {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            _ringtoneCtx = new AC();
+            if (_ringtoneCtx.state === 'suspended') {
+                _ringtoneCtx.resume().catch(function(){});
+            }
+
+            // 铃声参数
+            var ringConfig = {
+                ring_classic: { freq: 440, freq2: 480, pattern: [400, 200, 400, 2000], type: 'sine' },
+                ring_bell:    { freq: 660, freq2: 770, pattern: [300, 150, 300, 150, 300, 2000], type: 'triangle' },
+                ring_digital: { freq: 880, freq2: 1100, pattern: [150, 100, 150, 100, 150, 100, 150, 2000], type: 'square' },
+                tone_default: { freq: 520, freq2: 660, pattern: [200, 100, 200, 1500], type: 'triangle' },
+                tone_soft:    { freq: 440, freq2: 554, pattern: [300, 200, 300, 1800], type: 'sine' },
+                tone_low:     { freq: 330, freq2: 392, pattern: [400, 200, 400, 2000], type: 'sawtooth' },
+                tone_warm:    { freq: 392, freq2: 523, pattern: [350, 150, 350, 1700], type: 'triangle' },
+                tone_dark:    { freq: 262, freq2: 330, pattern: [450, 150, 450, 2000], type: 'square' },
+                tone_haze:    { freq: 350, freq2: 440, pattern: [300, 200, 300, 1800], type: 'sine' }
+            };
+
+            var cfg = ringConfig[preset] || ringConfig.ring_classic;
+            var pattern = cfg.pattern;
+            var patternIdx = 0;
+
+            function playOneTone() {
+                if (!_ringtoneCtx) return;
+                var dur = pattern[patternIdx];
+                var isTone = (patternIdx % 2 === 0); // 偶数索引是响铃，奇数是间隔
+
+                if (isTone && dur > 0) {
+                    try {
+                        var osc1 = _ringtoneCtx.createOscillator();
+                        var osc2 = _ringtoneCtx.createOscillator();
+                        var gain = _ringtoneCtx.createGain();
+                        osc1.type = cfg.type;
+                        osc2.type = cfg.type;
+                        osc1.frequency.value = cfg.freq;
+                        osc2.frequency.value = cfg.freq2;
+                        gain.gain.value = vol;
+                        osc1.connect(gain);
+                        osc2.connect(gain);
+                        gain.connect(_ringtoneCtx.destination);
+                        var now = _ringtoneCtx.currentTime;
+                        osc1.start(now);
+                        osc2.start(now);
+                        // 淡入淡出避免爆音
+                        gain.gain.setValueAtTime(0, now);
+                        gain.gain.linearRampToValueAtTime(vol, now + 0.01);
+                        gain.gain.setValueAtTime(vol, now + dur / 1000 - 0.02);
+                        gain.gain.linearRampToValueAtTime(0, now + dur / 1000);
+                        osc1.stop(now + dur / 1000);
+                        osc2.stop(now + dur / 1000);
+                    } catch(e) {}
+                }
+
+                patternIdx = (patternIdx + 1) % pattern.length;
+                _ringtoneTimer = setTimeout(playOneTone, dur);
+            }
+
+            playOneTone();
+            console.log('[call] 来电铃声开始:', preset);
+        } catch(e) {
+            console.warn('[call] 铃声合成失败:', e);
+        }
+    }
+
+    function stopRingtone() {
+        if (_ringtoneTimer) {
+            clearTimeout(_ringtoneTimer);
+            _ringtoneTimer = null;
+        }
+        if (_ringtoneAudio) {
+            try { _ringtoneAudio.pause(); _ringtoneAudio.currentTime = 0; } catch(e) {}
+            _ringtoneAudio = null;
+        }
+        if (_ringtoneCtx) {
+            try { _ringtoneCtx.close(); } catch(e) {}
+            _ringtoneCtx = null;
+        }
+    }
 
     const S = {
         enabled:         localStorage.getItem(KEY_ENABLED) !== 'false',
@@ -524,6 +702,10 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
         const b = document.getElementById('call-mini-timer');
         if (a) a.textContent = t;
         if (b) b.textContent = t;
+        // 每秒保存一次通话状态（防止后台被杀时丢失通话记录）
+        if (Math.floor(S.elapsed / 1000) !== Math.floor((S.elapsed - 16) / 1000)) {
+            saveCallState();
+        }
         S.timerRAF = requestAnimationFrame(tick);
     }
 
@@ -595,6 +777,7 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
         S.active = true; S.startTime = null; S.elapsed = 0;
         S.minimized = false; S.isPartnerCall = !!isPartner; S.immersive = false;
         document.getElementById('call-window')?.classList.remove('immersive');
+        saveCallState(); // 保存通话状态（防止后台被杀时丢失）
 
         ['call-inc-avatar','call-conn-avatar','call-win-avatar','call-mini-av'].forEach(fillAv);
         ['call-conn-name','call-win-name','call-mini-name'].forEach(fillNm);
@@ -647,10 +830,12 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
 
     function endCall() {
         if (!S.active) return;
+        stopRingtone(); // 停止铃声（防止遗漏）
         const dur = S.elapsed;
         S.active = false; S.startTime = null;
         cancelAnimationFrame(S.timerRAF);
         clearTimeout(S.connectingTimer); clearTimeout(S.incomingTimer);
+        localStorage.removeItem(CALL_STATE_KEY); // 清除通话状态（正常结束）
 
         ['call-window','call-mini-pill','call-incoming-overlay'].forEach(id => {
             const e = document.getElementById(id);
@@ -680,6 +865,7 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
         fillAv('call-inc-avatar'); fillNm('call-inc-name');
         ov.classList.add('visible');
         clearTimeout(S.incomingTimer);
+        startRingtone(); // 播放来电铃声
 
         const autoRejectChance = 0.30;
         if (Math.random() < autoRejectChance) {
@@ -687,6 +873,7 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
             S.incomingTimer = setTimeout(() => {
                 if (!ov.classList.contains('visible')) return;
                 ov.classList.remove('visible');
+                stopRingtone(); // 停止铃声
                 const myName = (typeof settings !== 'undefined' && settings.myName) || '我';
                 const partnerName = getName();
                 const rejectLabels = [
@@ -702,6 +889,7 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
             S.incomingTimer = setTimeout(() => {
                 if (!ov.classList.contains('visible')) return;
                 ov.classList.remove('visible');
+                stopRingtone(); // 停止铃声
                 const myName = (typeof settings !== 'undefined' && settings.myName) || '我';
                 sendCallEvent('fa-phone-slash', `${myName}未接听 ${getName()} 的来电`, null);
             }, 22000);
@@ -844,12 +1032,15 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
         document.getElementById('call-inc-reject')?.addEventListener('click', () => {
             document.getElementById('call-incoming-overlay')?.classList.remove('visible');
             clearTimeout(S.incomingTimer);
+            stopRingtone(); // 停止铃声
             const myName = (typeof settings !== 'undefined' && settings.myName) || '我';
             sendCallEvent('fa-phone-slash', `${myName}拒绝了 ${getName()} 的通话`, null);
         });
         document.getElementById('call-inc-accept')?.addEventListener('click', () => {
             document.getElementById('call-incoming-overlay')?.classList.remove('visible');
-            clearTimeout(S.incomingTimer); startCall(true);
+            clearTimeout(S.incomingTimer);
+            stopRingtone(); // 停止铃声
+            startCall(true);
         });
 
         document.getElementById('call-hangup-btn')?.addEventListener('click', endCall);
@@ -906,7 +1097,7 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
         initDrag(); initPillDrag(); initResize();
     }
 
-    window.callFeature = { startCall, endCall, showIncomingCall, restoreWindow, minimizeWindow };
+    window.callFeature = { startCall, endCall, showIncomingCall, restoreWindow, minimizeWindow, testRingtone: function() { startRingtone(); setTimeout(stopRingtone, 3000); } };
 
     // 页面刷新/关闭时，如果正在通话则自动挂断并保存记录
     window.addEventListener('beforeunload', function() {
@@ -916,10 +1107,18 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
             cancelAnimationFrame(S.timerRAF);
             clearTimeout(S.connectingTimer); clearTimeout(S.incomingTimer);
             sendCallMsg(dur);
+            localStorage.removeItem(CALL_STATE_KEY); // 清除通话状态
             // 确保同步保存，不依赖 throttledSaveData 的 500ms 延迟
             if (typeof window._backupCriticalData === 'function') {
                 window._backupCriticalData();
             }
+        }
+    });
+
+    // iOS 后台被杀时 pagehide 比 beforeunload 更可靠
+    window.addEventListener('pagehide', function() {
+        if (S.active) {
+            saveCallState(); // 确保通话状态已保存
         }
     });
 
@@ -928,6 +1127,12 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
         injectHTML();
         bindEvents();
         loadBg();
+
+        // 恢复中断的通话记录（页面被后台杀死后重新打开时）
+        // 延迟执行，确保 sendCallEvent 等函数已就绪
+        setTimeout(function() {
+            restoreInterruptedCall();
+        }, 2000);
 
         const late = () => {
             injectToolbarBtn();
